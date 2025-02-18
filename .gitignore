@@ -1,0 +1,19 @@
+# Virtual environment
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment variables
+.env
+
+# Docker-related files (optional)
+*.log
+
+#Alembic migration unnecessary files
+alembic/*.log   # If any logs are created
+alembic/*.sqlite  # Example of local DB files
+
+# Alembic .ini config file (optional)
+alembic.ini      # Only ignore if it contains sensitive info
