@@ -14,6 +14,7 @@ class User(Base):
     email = Column(String, unique=True, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now(), nullable=False)
     password = Column(String, nullable=False)
+    role = Column(String, default="regular")
 
     # Relationships
     reviews = relationship("Review", back_populates="user")

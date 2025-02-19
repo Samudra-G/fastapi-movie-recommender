@@ -27,6 +27,7 @@ class UserResponse(BaseModel):
     id: int
     email: EmailStr
     created_at: datetime
+    role: str
 
     class Config:
         orm_mode = True
@@ -34,3 +35,6 @@ class UserResponse(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
+class UserRoleUpdate(BaseModel):
+    role: str
