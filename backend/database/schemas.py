@@ -20,11 +20,12 @@ class MovieResponse(MovieCreate):
 
 #users ORM model
 class UserCreate(BaseModel):
+    name: str
     email: EmailStr
     password: str
 
 class UserResponse(BaseModel):
-    id: int
+    user_id: int
     email: EmailStr
     created_at: datetime
     role: str
