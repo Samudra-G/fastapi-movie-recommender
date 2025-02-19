@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import List, Optional
 from datetime import datetime
 
@@ -17,3 +17,25 @@ class MovieResponse(MovieCreate):
 
     class Config:
         orm_mode = True
+
+#users ORM model
+class UserCreate(BaseModel):
+    name: str
+    email: EmailStr
+    password: str
+
+class UserResponse(BaseModel):
+    user_id: int
+    email: EmailStr
+    created_at: datetime
+    role: str
+
+    class Config:
+        orm_mode = True
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class UserRoleUpdate(BaseModel):
+    role: str
