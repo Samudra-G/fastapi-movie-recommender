@@ -43,8 +43,12 @@ def get_me(current_user: TokenData = Depends(get_current_user), db: Session = De
 
 #get user by id
 @router.get("/{user_id}", response_model=UserResponse)
-def get_user(user_id: int, db: Session = Depends(get_db)):
-
+def get_user(user_id: int, db: Session = Depends(get_db),
+              current_user: TokenData = Depends(get_current_user)):
+    
+    if current_user.role != "admin" and current_user.id != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to view this user")
+    
     user = db.query(User).filter(User.user_id == user_id).first()
     if not user:
         raise HTTPException(status_code=400, detail="User not found")
@@ -53,8 +57,12 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
 
 #set user role
 @router.put("/{user_id}/role", status_code=200)
-def update_user_role(user_id: int, new_role: UserRoleUpdate, db: Session = Depends(get_db)):
+def update_user_role(user_id: int, new_role: UserRoleUpdate, db: Session = Depends(get_db), 
+                     current_user: TokenData = Depends(get_current_user)):
 
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized to update roles")
+    
     valid_roles = ["regular", "admin"]
     if new_role.role not in valid_roles:
         raise HTTPException(status_code=400, detail="Invalid role")
@@ -67,4 +75,4 @@ def update_user_role(user_id: int, new_role: UserRoleUpdate, db: Session = Depen
     db.commit()
     db.refresh(user)
 
-    return {"message": f"User {user.email} role updated to {new_role.role}"}
+    return {"message": f"User {user.name} role updated to {new_role.role}"}

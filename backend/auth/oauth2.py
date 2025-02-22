@@ -36,13 +36,14 @@ def verify_access_token(token: str, credentials_exception):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
+        user_id: Optional[int] = payload.get("user_id")
         name: Optional[str] = payload.get("username")
         role: Optional[str] = payload.get("role")
 
         if name is None or role is None:
             raise credentials_exception
     
-        token_data = TokenData(name= name, role= role)
+        token_data = TokenData(id= user_id, name= name, role= role)
         return token_data
     
     except ExpiredSignatureError:
