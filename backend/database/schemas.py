@@ -10,13 +10,13 @@ class MovieCreate(BaseModel):
     embedding: Optional[str] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class MovieResponse(MovieCreate):
     movie_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 #users ORM model
 class UserCreate(BaseModel):
@@ -31,7 +31,7 @@ class UserResponse(BaseModel):
     role: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -39,3 +39,12 @@ class UserLogin(BaseModel):
 
 class UserRoleUpdate(BaseModel):
     role: str
+
+#Token
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    name: Optional[str] = None
+    role: Optional[str] = None
