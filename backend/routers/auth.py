@@ -20,6 +20,6 @@ def login_user(user_credentials: OAuth2PasswordRequestForm = Depends(), db: Sess
     if not utils.verify(user_credentials.password, user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials.")
     
-    access_token = oauth2.create_access_token(data = {"username": user.name, "role": user.role})
+    access_token = oauth2.create_access_token(data = {"user_id": user.user_id, "username": user.name, "role": user.role})
 
     return {"access_token": access_token, "token_type": "bearer"}
