@@ -4,6 +4,8 @@ from typing import List, Optional
 from backend.database.schemas import MovieCreate, MovieResponse
 from backend.models.models import Movie
 from backend.database.database import get_db
+from backend.database.schemas import TokenData
+from backend.auth.oauth2 import get_current_user
 
 router = APIRouter(
     prefix = "/movies",
@@ -12,11 +14,15 @@ router = APIRouter(
 
 #add movie
 @router.post("/", response_model=MovieResponse, status_code=201)
-def create_movie(movie: MovieCreate, db: Session = Depends(get_db)):
+def create_movie(movie: MovieCreate, db: Session = Depends(get_db), current_user: TokenData = Depends(get_current_user)):
+    
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized to perform action")
     
     existing_movie = db.query(Movie).filter(Movie.title == movie.title).first()
     if existing_movie:
         raise HTTPException(status_code=400, detail="Movie with this title already exists.")
+    
     try:
         db_movie = Movie(**movie.model_dump())
         db.add(db_movie)
@@ -54,8 +60,12 @@ def get_movies(genre: Optional[str] = None, db: Session = Depends(get_db)):
 
 #update movie: will add to admin privilege later
 @router.put("/{movie_id}", response_model=MovieResponse, status_code=200)
-def update_movie(movie_id: int, movie: MovieCreate, db: Session = Depends(get_db)):
+def update_movie(movie_id: int, movie: MovieCreate, db: Session = Depends(get_db), 
+                 current_user: TokenData = Depends(get_current_user)):
 
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized to perform action")
+    
     db_movie = db.query(Movie).filter(Movie.movie_id == movie_id).first()
     if not db_movie:
         raise HTTPException(status_code=404, detail="Movie not found.")
@@ -70,8 +80,11 @@ def update_movie(movie_id: int, movie: MovieCreate, db: Session = Depends(get_db
 
 #delete movie
 @router.delete("/{movie_id}", status_code=204)
-def delete_movie(movie_id: int, db: Session = Depends(get_db)):
+def delete_movie(movie_id: int, db: Session = Depends(get_db), current_user: TokenData = Depends(get_current_user)):
 
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized to perform action")
+    
     db_movie = db.query(Movie).filter(Movie.movie_id == movie_id).first()
     if not db_movie:
         raise HTTPException(status_code=404, detail="Movie not found")

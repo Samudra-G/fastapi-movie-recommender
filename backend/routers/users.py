@@ -5,6 +5,8 @@ from backend.database.schemas import UserCreate, UserResponse, UserLogin, UserRo
 from backend.models.models import User
 from backend.database.database import get_db
 from backend.auth.utils import hash_password
+from backend.database.schemas import TokenData
+from backend.auth.oauth2 import get_current_user
 
 router = APIRouter(
     prefix="/users",
@@ -29,6 +31,15 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user)
 
     return new_user
+
+#get personal data
+@router.get("/me", response_model=UserResponse)
+def get_me(current_user: TokenData = Depends(get_current_user), db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.name == current_user.name).first()  # Assuming `name` stores the email
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return user
 
 #get user by id
 @router.get("/{user_id}", response_model=UserResponse)
