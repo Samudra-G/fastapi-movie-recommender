@@ -4,6 +4,7 @@ from typing import List, Optional
 from backend.database.schemas import UserCreate, UserResponse, UserLogin, UserRoleUpdate
 from backend.models.models import User
 from backend.database.database import get_db
+from backend.auth.utils import hash_password
 
 router = APIRouter(
     prefix="/users",
@@ -14,10 +15,14 @@ router = APIRouter(
 @router.post("/", response_model=UserResponse, status_code=201)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
 
+
     existing_user = db.query(User).filter(User.email == user.email).first()
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     
+    hashed_password = hash_password(user.password)
+    user.password = hashed_password
+
     new_user = User(**user.model_dump())
     db.add(new_user)
     db.commit()
