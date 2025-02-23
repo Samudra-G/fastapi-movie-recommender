@@ -17,3 +17,6 @@ alembic/*.sqlite  # Example of local DB files
 
 # Alembic .ini config file (optional)
 alembic.ini      # Only ignore if it contains sensitive info
+
+#All pycaches
+**/__pycache__/
