@@ -1,5 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import update
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from typing import List, Optional
 from backend.database.schemas import UserCreate, UserResponse, UserLogin, UserRoleUpdate
 from backend.models.models import User
@@ -16,10 +19,10 @@ router = APIRouter(
 
 #add user
 @router.post("/", response_model=UserResponse, status_code=201)
-def create_user(user: UserCreate, db: Session = Depends(get_db)):
+async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
 
-
-    existing_user = db.query(User).filter(User.email == user.email).first()
+    result = await db.execute(select(User).where(User.email == user.email))
+    existing_user = result.scalars().first()
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     
@@ -28,15 +31,17 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
 
     new_user = User(**user.model_dump())
     db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+    await db.commit()
+    await db.refresh(new_user)
 
     return new_user
 
 #get personal data
 @router.get("/me", response_model=UserResponse)
-def get_me(current_user: TokenData = Depends(get_current_user), db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.name == current_user.name).first()  # Assuming `name` stores the email
+async def get_me(current_user: TokenData = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+
+    result = await db.execute(select(User).where(User.name == current_user.name))
+    user = result.scalars().first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
@@ -44,7 +49,7 @@ def get_me(current_user: TokenData = Depends(get_current_user), db: Session = De
 
 #get user by id
 @router.get("/{user_id}", response_model=UserResponse)
-def get_user(user_id: int, db: Session = Depends(get_db),
+async def get_user(user_id: int, db: AsyncSession = Depends(get_db),
               current_user: TokenData = Depends(get_current_user)):
 
     if current_user.id == user_id:
@@ -52,7 +57,8 @@ def get_user(user_id: int, db: Session = Depends(get_db),
     else:
         admin_required(current_user)
 
-    user = db.query(User).filter(User.user_id == user_id).first()
+    result = await db.execute(select(User).where(User.user_id == user_id))
+    user = result.scalars().first()
     if not user:
         raise HTTPException(status_code=400, detail="User not found")
     
@@ -60,19 +66,20 @@ def get_user(user_id: int, db: Session = Depends(get_db),
 
 #set user role
 @router.put("/{user_id}/role", status_code=200)
-def update_user_role(user_id: int, new_role: UserRoleUpdate, db: Session = Depends(get_db), 
+async def update_user_role(user_id: int, new_role: UserRoleUpdate, db: AsyncSession = Depends(get_db), 
                      current_user: TokenData = Depends(admin_required)):
     
     valid_roles = ["regular", "admin"]
     if new_role.role not in valid_roles:
         raise HTTPException(status_code=400, detail="Invalid role")
     
-    user = db.query(User).filter(User.user_id == user_id).first()
+    result = await db.execute(select(User).where(User.user_id == user_id))
+    user = result.scalars().first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    db.query(User).filter(User.user_id == user_id).update({"role": new_role.role})
-    db.commit()
-    db.refresh(user)
+    await db.execute(update(User).where(User.user_id == user_id).values({"role": new_role.role}))
+    await db.commit()
+    await db.refresh(user)
 
     return {"message": f"Admin {current_user.name} updated User {user.name}'s role to {new_role.role}"}
