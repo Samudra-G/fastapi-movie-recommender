@@ -7,6 +7,7 @@ from backend.database.database import get_db
 from backend.auth.utils import hash_password
 from backend.database.schemas import TokenData
 from backend.auth.oauth2 import get_current_user
+from backend.auth.admin import admin_required
 
 router = APIRouter(
     prefix="/users",
@@ -45,10 +46,12 @@ def get_me(current_user: TokenData = Depends(get_current_user), db: Session = De
 @router.get("/{user_id}", response_model=UserResponse)
 def get_user(user_id: int, db: Session = Depends(get_db),
               current_user: TokenData = Depends(get_current_user)):
-    
-    if current_user.role != "admin" and current_user.id != user_id:
-        raise HTTPException(status_code=403, detail="Not authorized to view this user")
-    
+
+    if current_user.id == user_id:
+        pass
+    else:
+        admin_required(current_user)
+
     user = db.query(User).filter(User.user_id == user_id).first()
     if not user:
         raise HTTPException(status_code=400, detail="User not found")
@@ -58,10 +61,7 @@ def get_user(user_id: int, db: Session = Depends(get_db),
 #set user role
 @router.put("/{user_id}/role", status_code=200)
 def update_user_role(user_id: int, new_role: UserRoleUpdate, db: Session = Depends(get_db), 
-                     current_user: TokenData = Depends(get_current_user)):
-
-    if current_user.role != "admin":
-        raise HTTPException(status_code=403, detail="Not authorized to update roles")
+                     current_user: TokenData = Depends(admin_required)):
     
     valid_roles = ["regular", "admin"]
     if new_role.role not in valid_roles:
@@ -75,4 +75,4 @@ def update_user_role(user_id: int, new_role: UserRoleUpdate, db: Session = Depen
     db.commit()
     db.refresh(user)
 
-    return {"message": f"User {user.name} role updated to {new_role.role}"}
+    return {"message": f"Admin {current_user.name} updated User {user.name}'s role to {new_role.role}"}
