@@ -4,15 +4,17 @@ from contextlib import asynccontextmanager
 from sqlalchemy.sql import text
 from backend.models.models import User, Movie, Review, Poster, Recommendation
 from backend.routers import movies, users, auth
-
-
+from backend.cache.redis_cache import redis_cache
+    
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("Starting up: Running DB migrations...")
+    print("Starting up: Running DB migrations and connecting to Redis...")
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    await redis_cache.connect()
     yield
-    print("Shutting down: Closing DB connections...")
+    print("Shutting down: Closing DB and Redis connections...")
+    await redis_cache.disconnect()
     await engine.dispose()
 
 app = FastAPI(lifespan=lifespan)
@@ -35,3 +37,14 @@ async def test_db():
         return {"status":"Database Connection Failed","error":str(e)}
     finally:
         await session.close()
+
+@app.get("/test-redis")
+async def test_redis():
+    test_key = "test_key"
+    test_value = {"message": "Redis is working"}
+
+    await redis_cache.set_cache(test_key, test_value, expire=60)
+
+    retrieved_value = await redis_cache.get_cache(test_key)
+
+    return {"stored_value" : retrieved_value}
