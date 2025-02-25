@@ -21,3 +21,8 @@ alembic.ini      # Only ignore if it contains sensitive info
 #All pycaches
 **/__pycache__/
 .pytest_cache
+
+# Ignore Redis data and logs
+redis/
+*.rdb
+*.aof

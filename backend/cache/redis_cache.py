@@ -1,7 +1,7 @@
 import os
 import json
 import redis.asyncio as redis
-from typing import Optional
+from typing import Optional, Union
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -28,13 +28,12 @@ class RedisCache:
         if not self.redis:
             raise RuntimeError(f"Redis connection not initialized. Call connect() first")
         
-    async def set_cache(self, key:str, value:dict, expire: int = 600):
+    async def set_cache(self, key:str, value: Union[dict, list], expire: int = 600):
         self.is_connected()
         assert self.redis is not None
-
         await self.redis.setex(key, expire, json.dumps(value))
     
-    async def get_cache(self, key:str) -> Optional[dict | str]:
+    async def get_cache(self, key:str) -> Optional[Union[dict, list]]:
         self.is_connected()
         assert self.redis is not None
 
