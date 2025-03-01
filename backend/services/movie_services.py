@@ -6,6 +6,7 @@ from backend.cache.redis_cache import redis_cache
 from backend.auth.utils import to_dict
 from fastapi import HTTPException
 from typing import Optional
+
 class MovieService:
 
     @staticmethod
