@@ -1,13 +1,15 @@
+import asyncio
 from passlib.context import CryptContext
 from datetime import datetime
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["bcrypt"],
+                           bcrypt__rounds=10, deprecated="auto")
 
-def hash_password(password: str):
-    return pwd_context.hash(password)
+async def hash_password(password: str):
+    return await asyncio.to_thread(pwd_context.hash, password) 
 
-def verify(plain_passoword, hashed_password):
-    return pwd_context.verify(plain_passoword, hashed_password)
+async def verify(plain_password, hashed_password):
+    return await asyncio.to_thread(pwd_context.verify, plain_password, hashed_password)
 
 def to_dict(obj):
     data = {}

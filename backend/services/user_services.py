@@ -15,7 +15,7 @@ class UserService:
         if existing_user:
             raise HTTPException(status_code=400, detail="Email already registered")
         
-        hashed_password = hash_password(user.password)
+        hashed_password = await hash_password(user.password)
         user.password = hashed_password
 
         new_user = User(**user.model_dump())

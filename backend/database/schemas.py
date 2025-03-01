@@ -29,7 +29,7 @@ class UserResponse(BaseModel):
     email: EmailStr
     created_at: datetime
     role: str
-
+    
     class Config:
         from_attributes = True
 
