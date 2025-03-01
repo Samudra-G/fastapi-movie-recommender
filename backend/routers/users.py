@@ -1,13 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import update
-from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-from typing import List, Optional
 from backend.database.schemas import UserCreate, UserResponse, UserLogin, UserRoleUpdate
-from backend.models.models import User
 from backend.database.database import get_db
-from backend.auth.utils import hash_password
 from backend.database.schemas import TokenData
 from backend.auth.oauth2 import get_current_user
 from backend.auth.admin import admin_required
