@@ -4,6 +4,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, Float, Text, DateTim
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from datetime import datetime
+from pgvector.sqlalchemy import VECTOR
 
 
 class User(Base):
@@ -27,12 +28,28 @@ class Movie(Base):
     title = Column(String, nullable=False)
     genre = Column(String, nullable=True)
     release_date = Column(DateTime, nullable=True)
-    embedding = Column(Text, nullable=True)
+    embedding = Column(VECTOR(768))
 
     # Relationships
     reviews = relationship("Review", back_populates="movie")
     posters = relationship("Poster", back_populates="movie")
     recommendations = relationship("Recommendation", back_populates="movie")
+    genres = relationship("Genre", secondary="movie_genre", back_populates="movies")
+
+class Genre(Base):
+    __tablename__ = "genres"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, nullable=False)
+
+    #Relationships
+    movies = relationship("Movie", secondary="movie_genre", back_populates="genres")
+
+class MovieGenre(Base):
+    __tablename__ = "movie_genre"
+
+    movie_id = Column(Integer, ForeignKey("movies.movie_id", ondelete="CASCADE"), primary_key=True)
+    genre_id = Column(Integer, ForeignKey("genres.id", ondelete="CASCADE"), primary_key=True)
 
 class Review(Base):
     __tablename__ = "reviews"
@@ -54,7 +71,7 @@ class Poster(Base):
     poster_id = Column(Integer, primary_key=True, index=True)
     movie_id = Column(Integer, ForeignKey("movies.movie_id"), nullable=False)
     image_path = Column(String, nullable=False)
-    embedding = Column(Text, nullable=True)
+    embedding = Column(VECTOR(768))
 
     # Relationships
     movie = relationship("Movie", back_populates="posters")
