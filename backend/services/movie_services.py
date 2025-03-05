@@ -44,31 +44,33 @@ class MovieService:
         await redis_cache.set_cache(cache_key, movie_dict, expire=3600)
 
         return movie
-    
+
     @staticmethod
-    async def get_movies(genre: Optional[str], db: AsyncSession):
+    async def get_movies(genre: Optional[str], db: AsyncSession, page: int=1, per_page: int=50):
         try:
-            cache_key = f"movies:{genre if genre else 'all'}"
-            cached_movies = await redis_cache.get_cache(cache_key)
+            cached_movies = await redis_cache.get_movies_cache(genre,page,per_page)
 
             if cached_movies:
-                return cached_movies
+                return cached_movies 
             
             query = select(Movie)
             if genre:
                 query = query.where(Movie.genre.ilike(f"%{genre}%"))
             
-            result = await db.execute(query)
+            result = await db.execute(query.offset((page - 1) * per_page).limit(per_page))
             movies = result.scalars().all()
+
             if not movies:
                 raise HTTPException(status_code=404, detail="No movies found")
             
             movies_dict = [to_dict(movie) for movie in movies]
-            await redis_cache.set_cache(cache_key, movies_dict, expire=3600)
-            return movies
-        
+
+            await redis_cache.set_movies_cache(genre, movies_dict, expire=3600)
+
+            return movies_dict 
+
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"An error occured: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
     @staticmethod
     async def update_movie(movie_id: int, movie: MovieCreate, db: AsyncSession):
