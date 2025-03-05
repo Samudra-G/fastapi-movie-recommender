@@ -25,7 +25,7 @@ app.include_router(auth.router)
 
 @app.get('/')
 async def read_root():
-    return {"message":"Welcome to this API"}
+    return {"message":"Server is running"}
 
 @app.get('/test-db')
 async def test_db():

@@ -1,20 +1,23 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_serializer
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, date
 
 #Movie schemas
 class MovieCreate(BaseModel):
     title: str
     genre: Optional[str] = None
-    release_date: Optional[datetime] = None
-    embedding: Optional[str] = None
+    release_date: Optional[date] = None
+    embedding: Optional[List[float]] = None
 
     class Config:
         from_attributes = True
 
-class MovieResponse(MovieCreate):
+class MovieResponse(BaseModel):
+    title: str
+    genre: Optional[str] = None
+    release_date: Optional[date] = None
     movie_id: int
-
+    
     class Config:
         from_attributes = True
 
