@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.database.schemas import UserCreate, UserResponse, UserLogin, UserRoleUpdate
 from backend.database.database import get_db
@@ -6,6 +6,10 @@ from backend.database.schemas import TokenData
 from backend.auth.oauth2 import get_current_user
 from backend.auth.admin import admin_required
 from backend.services.user_services import UserService
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+
+limiter = Limiter(key_func=get_remote_address)
 
 router = APIRouter(
     prefix="/users",
@@ -19,7 +23,8 @@ async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
 
 #get personal data
 @router.get("/me", response_model=UserResponse)
-async def get_me(current_user: TokenData = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+@limiter.limit("5/minute")
+async def get_me(request: Request, current_user: TokenData = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     if current_user.name:
         return await UserService.get_me(current_user.name, db)
 

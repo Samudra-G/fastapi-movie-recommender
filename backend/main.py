@@ -1,11 +1,15 @@
-from fastapi import FastAPI
+from typing import Union
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 from backend.database.database import engine, Base, AsyncSessionLocal
 from contextlib import asynccontextmanager
 from sqlalchemy.sql import text
-from backend.models.models import User, Movie, Review, Poster, Recommendation
 from backend.routers import movies, users, auth
 from backend.cache.redis_cache import redis_cache
-    
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Starting up: Running DB migrations and connecting to Redis...")
@@ -17,7 +21,13 @@ async def lifespan(app: FastAPI):
     await redis_cache.disconnect()
     await engine.dispose()
 
+def rate_limit_exceeded_handler(request: Request, exc: Union[Exception, RateLimitExceeded]):
+    return  JSONResponse(status_code=429, content={"error": "Too many request. Try again later."})
+
+limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(lifespan=lifespan)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
 
 app.include_router(movies.router)
 app.include_router(users.router)
