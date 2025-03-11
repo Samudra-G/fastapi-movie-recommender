@@ -25,4 +25,4 @@ alembic.ini      # Only ignore if it contains sensitive info
 # Ignore Redis data and logs
 redis/
 *.rdb
-*.aof
+*.aofdatasets/
