@@ -25,4 +25,6 @@ alembic.ini      # Only ignore if it contains sensitive info
 # Ignore Redis data and logs
 redis/
 *.rdb
-*.aofdatasets/
+
+transformers/datasets/
+transformers/bert_tuning.ipynb
