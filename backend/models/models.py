@@ -33,6 +33,7 @@ class Movie(Base):
     vote_count = Column(Integer, nullable=False, default=0)  # Number of votes
     runtime = Column(Integer, nullable=True)  # Movie duration in minutes
     embedding = Column(VECTOR(768))
+    overview = Column(Text, nullable=True)
 
     # Relationships
     reviews = relationship("Review", back_populates="movie")
@@ -63,8 +64,8 @@ class Review(Base):
     user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=True)
     movie_id = Column(Integer, ForeignKey("movies.movie_id", ondelete="CASCADE"), nullable=False)
     review_text = Column(Text, nullable=True) #only user reviews
-    sentiment = Column(Float, nullable=True, index=True) #sentiments range from -1 to +1 from imdb    
-    source = Column(String, default="user") #user or imdb
+    sentiment = Column(Float(precision=2), nullable=True, index=True) #sentiments range from -1 to +1 from imdb    
+    source = Column(String, default="user", index=True) #user or imdb
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now(), nullable=False)
 
      # Relationships

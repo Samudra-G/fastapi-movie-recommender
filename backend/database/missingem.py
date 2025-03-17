@@ -16,6 +16,7 @@ MODEL_NAME = os.getenv("MODEL_PATH")
 if not MODEL_NAME:
     raise ValueError("MODEL_PATH environment variable is not set or invalid")
 
+# Load tokenizer and model
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModel.from_pretrained(MODEL_NAME)
 model.eval()
@@ -25,7 +26,10 @@ model.to(device)
 
 async_session = async_sessionmaker(engine, autocommit=False, autoflush=False, expire_on_commit=False)
 
-BATCH_SIZE = 100
+# Movie IDs with zero embeddings
+ZERO_EMBEDDING_MOVIES = [
+    38433, 34390, 34608, 33796, 34391, 33991, 34389  # List of affected movie IDs
+]
 
 
 async def get_embeddings(text: str) -> np.ndarray:
@@ -50,42 +54,32 @@ async def get_movie_genres(session, movie_id):
     return ", ".join(genres) if genres else ""
 
 
-async def process_batch(movies_batch, session):
-    """Generate embeddings and update a batch of movies."""
-    tasks = [get_movie_genres(session, movie.movie_id) for movie in movies_batch]
-    genres_list = await asyncio.gather(*tasks)  # Fetch genres in parallel
-
-    embeddings_tasks = [
-        get_embeddings(f"{movie.overview} {genres}" if movie.overview else genres)
-        for movie, genres in zip(movies_batch, genres_list)
-    ]
-    embeddings = await asyncio.gather(*embeddings_tasks)
-
-    for movie, embedding in zip(movies_batch, embeddings):
-        movie.embedding = embedding  # type: ignore
-        session.add(movie)
-
-    await session.commit()  # Commit after processing each batch
-
-
 async def update_movie_embeddings():
-    """Fetch movies in batches, generate embeddings, and update in the database."""
+    """Fetch movies with zero embeddings and update them."""
     async with async_session() as session:
-        offset = 3800 #changing from 0 to 3800 for now
-        while True:
-            # Fetch batch of movies
-            result = await session.execute(select(Movie).offset(offset).limit(BATCH_SIZE))
-            movies = result.scalars().all()
+        result = await session.execute(select(Movie).where(Movie.movie_id.in_(ZERO_EMBEDDING_MOVIES)))
+        movies = result.scalars().all()
 
-            if not movies:  # Stop when no more movies are left
-                break
+        if not movies:
+            print("No movies found with zero embeddings.")
+            return
 
-            await process_batch(movies, session)
-            offset += BATCH_SIZE  # Move to next batch
+        print(f"Found {len(movies)} movies with zero embeddings. Updating...")
 
-            print(f"Processed {offset} movies...")
+        for movie in movies:
+            genres = await get_movie_genres(session, movie.movie_id)
+            text_input = f"{movie.overview} {genres}".strip() if movie.overview is not None else genres
 
-    print("Movie embeddings updated successfully!")
+            if not text_input:
+                print(f"Skipping movie {movie.movie_id} - No text data available for embedding.")
+                continue
+
+            embedding = await get_embeddings(text_input)
+            movie.embedding = embedding  # type: ignore
+            session.add(movie)
+
+        await session.commit()
+        print("Embeddings updated successfully!")
 
 
 if __name__ == "__main__":
