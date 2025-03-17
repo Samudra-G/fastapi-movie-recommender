@@ -6,6 +6,7 @@ from backend.database.schemas import TokenData
 from backend.auth.oauth2 import get_current_user
 from backend.auth.admin import admin_required
 from backend.services.user_services import UserService
+from backend.services.recommendation_services import RecommendationService
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
@@ -45,3 +46,13 @@ async def update_user_role(user_id: int, new_role: UserRoleUpdate, db: AsyncSess
     updated_user = await UserService.update_user_role(user_id, new_role, db)
 
     return {"message": f"Admin {current_user.name} updated User {updated_user.name}'s role to {new_role.role}"}
+
+# Generate recommendations
+@router.post("/{user_id}/recommendations", status_code=201)
+async def generate_recommendations(user_id: int, db: AsyncSession = Depends(get_db), top_n: int = 10):
+    return await RecommendationService.generate_recommendations(user_id, db, top_n)
+
+# Get recommendations
+@router.get("/{user_id}/recommendations")
+async def get_user_recommendations(user_id: int, db: AsyncSession = Depends(get_db), top_n: int = 10):
+    return await RecommendationService.get_user_recommendations(user_id, db, top_n)
