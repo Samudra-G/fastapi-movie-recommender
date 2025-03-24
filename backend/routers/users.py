@@ -17,18 +17,6 @@ router = APIRouter(
     tags= ["Users"] 
 )
 
-#add user
-@router.post("/", response_model=UserResponse, status_code=201)
-async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
-    return await UserService.create_user(user, db)
-
-#get personal data
-@router.get("/me", response_model=UserResponse)
-@limiter.limit("5/minute")
-async def get_me(request: Request, current_user: TokenData = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    if current_user.name:
-        return await UserService.get_me(current_user.name, db)
-
 #get user by id
 @router.get("/{user_id}", response_model=UserResponse)
 async def get_user(user_id: int, db: AsyncSession = Depends(get_db),
@@ -49,7 +37,8 @@ async def update_user_role(user_id: int, new_role: UserRoleUpdate, db: AsyncSess
 
 # Generate recommendations
 @router.post("/{user_id}/recommendations", status_code=201)
-async def generate_recommendations(user_id: int, db: AsyncSession = Depends(get_db), top_n: int = 10):
+async def generate_recommendations(user_id: int, db: AsyncSession = Depends(get_db), 
+                                    current_user: TokenData = Depends(get_current_user), top_n: int = 10):
     return await RecommendationService.generate_recommendations(user_id, db, top_n)
 
 # Get recommendations
