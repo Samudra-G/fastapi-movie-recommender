@@ -43,11 +43,11 @@ async def login_user(request: Request, user_credentials: OAuth2PasswordRequestFo
         raise HTTPException(status_code=500, detail=f"Login failed: {str(e)}")
 
 @router.post("/signup", response_model=schemas.UserResponse, status_code=201)    
-async def signup(user: schemas.UserCreate, db: AsyncSession = Depends(database.get_db)):
+async def signup(request: Request, user: schemas.UserCreate, db: AsyncSession = Depends(database.get_db)):
     return await UserService.create_user(user, db)
 
 @router.get("/me", response_model=schemas.UserResponse)
-@limiter.limit("5/minute")
+@limiter.limit("20/minute")
 async def get_me(request: Request, current_user: schemas.TokenData = Depends(oauth2.get_current_user),
                   db: AsyncSession = Depends(database.get_db)):
     if current_user.name:

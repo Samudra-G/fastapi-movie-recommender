@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, field_serializer
+from pydantic import BaseModel, EmailStr, Field, field_serializer
 from typing import List, Optional
 from datetime import datetime, date
 
@@ -23,12 +23,13 @@ class MovieResponse(BaseModel):
 
 #users ORM model
 class UserCreate(BaseModel):
-    name: str
+    name: str = Field(..., alias="username")
     email: EmailStr
     password: str
 
 class UserResponse(BaseModel):
     user_id: int
+    name: str
     email: EmailStr
     created_at: datetime
     role: str
