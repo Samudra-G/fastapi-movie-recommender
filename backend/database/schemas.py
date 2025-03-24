@@ -52,3 +52,14 @@ class TokenData(BaseModel):
     id: Optional[int] = None
     name: Optional[str] = None
     role: Optional[str] = None
+
+#Recommendations ORM
+class MovieRecommendation(BaseModel):
+    movie_id: int
+    title: str
+    genre: str
+    score: float
+
+class RecommendationResponse(BaseModel):
+    user_id: int
+    recommendations: List[MovieRecommendation]
