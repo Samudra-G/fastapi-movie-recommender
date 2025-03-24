@@ -1,6 +1,8 @@
+import os
 from typing import Union
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -9,6 +11,13 @@ from contextlib import asynccontextmanager
 from sqlalchemy.sql import text
 from backend.routers import movies, users, auth
 from backend.cache.redis_cache import redis_cache
+from dotenv import load_dotenv
+
+load_dotenv()
+
+CLIENT_URL = os.getenv("CLIENT_URL")
+if not CLIENT_URL:
+    raise ValueError("CLIENT_URL environment variable is not set or invalid")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -28,6 +37,14 @@ limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=CLIENT_URL, 
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
+)
 
 app.include_router(movies.router)
 app.include_router(users.router)
