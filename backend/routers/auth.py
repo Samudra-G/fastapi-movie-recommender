@@ -5,6 +5,7 @@ from sqlalchemy import or_
 from backend.database import database, schemas
 from backend.models.models import User
 from backend.services.user_services import UserService
+from backend.services.recommendation_services import RecommendationService
 from backend.auth import utils, oauth2
 from sqlalchemy.future import select
 from slowapi import Limiter
@@ -34,7 +35,10 @@ async def login_user(request: Request, user_credentials: OAuth2PasswordRequestFo
         
         access_token = oauth2.create_access_token(data = {"user_id": user.user_id, "username": user.name, "role": user.role})
 
+        await RecommendationService.ensure_recommendations_exist(user.user_id, db) #type:ignore
+
         return {"access_token": access_token, "token_type": "bearer"}
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Login failed: {str(e)}")
 
