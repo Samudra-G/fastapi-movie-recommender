@@ -1,0 +1,97 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { registerUser } from "../services/api";
+
+const Signup = () => {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await registerUser(username, email, password);
+      alert("Signup Successful! Please login.");
+      navigate("/login");
+    } catch (error) {
+      alert("Signup Failed.");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <section className="bg-gray-50 dark:bg-gray-900 min-h-screen flex items-center justify-center">
+      <div className="w-full max-w-md bg-white rounded-lg shadow-md dark:border dark:bg-gray-800 dark:border-gray-700 p-8">
+        <h1 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-6">
+          Create an account
+        </h1>
+        <form className="space-y-4" onSubmit={handleSignup}>
+          <div>
+            <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Username
+            </label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter username"
+              required
+              className="w-full p-3 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+            />
+          </div>
+          <div>
+            <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter email"
+              required
+              className="w-full p-3 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+            />
+          </div>
+          <div>
+            <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+              className="w-full p-3 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full p-3 font-semibold rounded-lg transition ${
+              loading
+                ? "bg-gray-500 text-gray-300 cursor-not-allowed"
+                : "bg-blue-600 text-white hover:bg-blue-700"
+            }`}
+          >
+            {loading ? "Signing up..." : "Sign up"}
+          </button>
+          <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
+            Already have an account?{" "}
+            <a
+              href="/login"
+              className="font-medium text-blue-600 hover:underline dark:text-blue-500"
+            >
+              Sign in
+            </a>
+          </p>
+        </form>
+      </div>
+    </section>
+  );
+};
+
+export default Signup;
