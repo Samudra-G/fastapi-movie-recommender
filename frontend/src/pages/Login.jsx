@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { loginUser } from "../services/api";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [identifier, setIdentifier] = useState(""); // Supports both email and username
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -13,6 +15,7 @@ const Login = () => {
       const data = await loginUser(identifier, password);
       localStorage.setItem("token", data.access_token);
       alert("Login Successful!");
+      navigate("/dashboard");
     } catch (error) {
       alert("Login Failed.");
     }
@@ -67,7 +70,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full p-3 font-semibold rounded-lg transition ${
+            className={`w-full py-3 px-4 font-semibold rounded-lg transition ${
               loading
                 ? "bg-gray-500 text-gray-300 cursor-not-allowed"
                 : "bg-blue-600 text-white hover:bg-blue-700"
