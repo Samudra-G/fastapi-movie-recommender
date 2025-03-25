@@ -34,6 +34,7 @@ class Movie(Base):
     runtime = Column(Integer, nullable=True)  # Movie duration in minutes
     embedding = Column(VECTOR(768))
     overview = Column(Text, nullable=True)
+    tmdb_id = Column(Integer, nullable=True, unique=True)
 
     # Relationships
     reviews = relationship("Review", back_populates="movie")
