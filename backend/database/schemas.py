@@ -17,6 +17,7 @@ class MovieResponse(BaseModel):
     genre: Optional[str] = None
     release_date: Optional[date] = None
     movie_id: int
+    poster_url: Optional[str] = None
     
     class Config:
         from_attributes = True
