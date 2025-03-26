@@ -94,7 +94,7 @@ const MovieDetails = () => {
           >
             {similarMovies.map((simMovie) => (
               <SwiperSlide key={simMovie.movie_id} className="bg-gray-700 p-3 rounded-lg">
-                <Link to={`/movies/${simMovie.movie_id}`} className="block">
+                <Link to={`/movie/${simMovie.movie_id}`} className="block">
                   <motion.img 
                     src={simMovie.poster_url || "/default-poster.jpg"} 
                     alt={simMovie.title} 
