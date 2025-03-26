@@ -42,8 +42,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=CLIENT_URL, 
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all HTTP methods
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["*"],  
+    allow_headers=["*"],  
 )
 
 app.include_router(movies.router)

@@ -11,7 +11,7 @@ from backend.database.schemas import MovieRecommendation, RecommendationResponse
 class RecommendationService:
 
     @staticmethod
-    async def generate_recommendations(user_id: int, db: AsyncSession, top_n: int = 10):
+    async def generate_recommendations(user_id: int, db: AsyncSession, top_n: int = 12):
         user = await db.get(User, user_id)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
@@ -75,7 +75,7 @@ class RecommendationService:
 
 
     @staticmethod
-    async def get_user_recommendations(user_id: int, db: AsyncSession, top_n: int = 10) -> RecommendationResponse:
+    async def get_user_recommendations(user_id: int, db: AsyncSession, top_n: int = 12) -> RecommendationResponse:
         user = await db.get(User, user_id)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")

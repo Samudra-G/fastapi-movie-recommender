@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { loginUser } from "../services/api";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 const Login = () => {
-  const [identifier, setIdentifier] = useState(""); // Supports both email and username
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -23,8 +24,18 @@ const Login = () => {
   };
 
   return (
-    <section className="bg-gray-50 dark:bg-gray-900 min-h-screen flex items-center justify-center">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-md dark:border dark:bg-gray-800 dark:border-gray-700 p-8">
+    <motion.section 
+      initial={{ opacity: 0, scale: 0.9 }} 
+      animate={{ opacity: 1, scale: 1 }} 
+      transition={{ duration: 0.5 }}
+      className="bg-gray-50 dark:bg-gray-900 min-h-screen flex items-center justify-center"
+    >
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="w-full max-w-md bg-white rounded-lg shadow-md dark:border dark:bg-gray-800 dark:border-gray-700 p-8"
+      >
         <h1 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-6">
           Sign in to your account
         </h1>
@@ -67,9 +78,10 @@ const Login = () => {
               Forgot password?
             </a>
           </div>
-          <button
+          <motion.button
             type="submit"
             disabled={loading}
+            whileTap={{ scale: 0.95 }}
             className={`w-full py-3 px-4 font-semibold rounded-lg transition ${
               loading
                 ? "bg-gray-500 text-gray-300 cursor-not-allowed"
@@ -77,7 +89,7 @@ const Login = () => {
             }`}
           >
             {loading ? "Logging in..." : "Sign in"}
-          </button>
+          </motion.button>
           <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
             Don’t have an account yet?{" "}
             <a href="#" className="font-medium text-blue-600 hover:underline dark:text-blue-500">
@@ -85,8 +97,8 @@ const Login = () => {
             </a>
           </p>
         </form>
-      </div>
-    </section>
+      </motion.div>
+    </motion.section>
   );
 };
 
