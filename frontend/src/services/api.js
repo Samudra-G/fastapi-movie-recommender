@@ -80,3 +80,13 @@ export const fetchUserProfile = async () => {
     throw error;
   }
 };
+
+export const fetchSimilarMovies = async (movieId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/movies/${movieId}/similar`, { headers: authHeader() });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching similar movies:", error);
+    return [];
+  }
+};

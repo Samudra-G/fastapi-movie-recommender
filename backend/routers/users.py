@@ -38,10 +38,10 @@ async def update_user_role(user_id: int, new_role: UserRoleUpdate, db: AsyncSess
 # Generate recommendations
 @router.post("/{user_id}/recommendations", status_code=201)
 async def generate_recommendations(user_id: int, db: AsyncSession = Depends(get_db), 
-                                    current_user: TokenData = Depends(get_current_user), top_n: int = 10):
+                                    current_user: TokenData = Depends(get_current_user), top_n: int = 12):
     return await RecommendationService.generate_recommendations(user_id, db, top_n)
 
 # Get recommendations
 @router.get("/{user_id}/recommendations")
-async def get_user_recommendations(user_id: int, db: AsyncSession = Depends(get_db), top_n: int = 10):
+async def get_user_recommendations(user_id: int, db: AsyncSession = Depends(get_db), top_n: int = 12):
     return await RecommendationService.get_user_recommendations(user_id, db, top_n)

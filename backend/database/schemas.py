@@ -22,6 +22,9 @@ class MovieResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class MovieDetailResponse(MovieResponse):
+    overview: Optional[str] = None
+
 #users ORM model
 class UserCreate(BaseModel):
     name: str = Field(..., alias="username")
@@ -61,6 +64,7 @@ class MovieRecommendation(BaseModel):
     title: str
     genre: str
     score: float
+    poster_url: Optional[str] = None
 
 class RecommendationResponse(BaseModel):
     user_id: int

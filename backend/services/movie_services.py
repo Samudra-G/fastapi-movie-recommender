@@ -1,7 +1,9 @@
+import numpy as np
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from backend.models.models import Movie, Poster
-from backend.database.schemas import MovieCreate
+from backend.database.schemas import MovieCreate, MovieRecommendation
+from sklearn.metrics.pairwise import cosine_similarity
 from backend.cache.redis_cache import redis_cache
 from backend.auth.utils import to_dict
 from fastapi import HTTPException
@@ -121,3 +123,64 @@ class MovieService:
         except Exception as e:
             await db.rollback()
             raise HTTPException(status_code=500, detail=f"An error occured: {str(e)}")
+        
+    @staticmethod
+    async def get_similar_movies(movie_id: int, db: AsyncSession, top_n: int = 10):
+
+        cache_key = f"similar_movies:{movie_id}"
+        cached_similar_movies = await redis_cache.get_cache(cache_key)
+        if cached_similar_movies:
+            return cached_similar_movies[:top_n]
+
+        # Retrieve the target movie
+        movie = await db.get(Movie, movie_id)
+        if not movie or movie.embedding is None:
+            raise HTTPException(status_code=404, detail="Movie not found or missing embedding")
+
+        target_embedding = np.array(movie.embedding).reshape(1, -1)
+
+        # Fetch all movies with embeddings
+        result = await db.execute(
+            select(Movie, Poster.image_path)
+            .join(Poster, Poster.movie_id == Movie.movie_id, isouter=True)
+            .where(Movie.embedding.isnot(None))
+        )
+        movies = result.all()
+
+        if not movies:
+            raise HTTPException(status_code=404, detail="No movies with embeddings available")
+
+        movie_list = []
+        embedding_matrix = []
+        posters_dict = {}  # Store poster URLs
+
+        for m, poster_url in movies:
+            if m.movie_id != movie_id:
+                movie_list.append(m)
+                embedding_matrix.append(m.embedding)
+                posters_dict[m.movie_id] = poster_url  # Store poster URL for each movie
+
+        if not embedding_matrix:
+            raise HTTPException(status_code=404, detail="No valid movie embeddings found")
+
+        embedding_matrix = np.array(embedding_matrix)
+
+        similarities = cosine_similarity(target_embedding, embedding_matrix)[0]
+        sorted_indices = np.argsort(similarities)[::-1][:top_n]
+
+        similar_movies = [
+            MovieRecommendation(
+                movie_id=movie_list[i].movie_id,
+                title=movie_list[i].title,
+                genre=movie_list[i].genre,
+                score=float(similarities[i]),
+                poster_url=posters_dict.get(movie_list[i].movie_id)  
+            )
+            for i in sorted_indices
+        ]
+
+        # Cache results
+        listed_similar_movies = [rec.model_dump() for rec in similar_movies]
+        await redis_cache.set_cache(cache_key, listed_similar_movies, expire=1800)
+
+        return similar_movies

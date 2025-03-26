@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
-from backend.database.schemas import MovieCreate, MovieResponse
+from backend.database.schemas import MovieCreate, MovieResponse, MovieDetailResponse
 from backend.models.models import Movie
 from backend.database.database import get_db
 from backend.database.schemas import TokenData
@@ -25,7 +25,7 @@ async def create_movie(request: Request, movie: MovieCreate, db: AsyncSession = 
     return await MovieService.create_movie(movie, db)
     
 #get movie by id
-@router.get("/{movie_id}", response_model=MovieResponse, status_code=200)
+@router.get("/{movie_id}", response_model=MovieDetailResponse, status_code=200)
 @limiter.limit("50/minute")
 async def get_movie(request: Request, movie_id: int, db : AsyncSession = Depends(get_db)):
     return await MovieService.get_movie(movie_id, db)
@@ -47,3 +47,8 @@ async def update_movie(movie_id: int, movie: MovieCreate, db: AsyncSession = Dep
 async def delete_movie(movie_id: int, db: AsyncSession = Depends(get_db),
                         current_user: TokenData = Depends(admin_required)):
     return await MovieService.delete_movie(movie_id, db)
+
+#similar movies
+@router.get("/{movie_id}/similar")
+async def get_similar_movies(movie_id: int, db: AsyncSession = Depends(get_db)):
+    return await MovieService.get_similar_movies(movie_id, db)
