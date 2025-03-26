@@ -24,7 +24,7 @@ async def lifespan(app: FastAPI):
     print("Starting up: Running DB migrations and connecting to Redis...")
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    await redis_cache.connect()
+    await redis_cache.connect() #type:ignore
     yield
     print("Shutting down: Closing DB and Redis connections...")
     await redis_cache.disconnect()
