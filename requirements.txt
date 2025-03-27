@@ -1,6 +1,7 @@
 # FastAPI framework & ASGI server
 fastapi[all]        # Includes Starlette, Uvicorn, Pydantic, and essential dependencies
 uvicorn[standard]   # ASGI server with logging & autoreload
+slowapi             # Middleware rate limiter
 
 # Database-related dependencies
 asyncpg             # PostgreSQL async driver
