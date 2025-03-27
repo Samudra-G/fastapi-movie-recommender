@@ -25,7 +25,7 @@ const Dashboard = () => {
           {[
             { text: "Home", color: "bg-blue-600", path: "/" },
             { text: "Profile", color: "bg-green-600", path: "/profile" },
-            { text: "Movie Details", color: "bg-purple-600", path: "/movie/1" },
+            { text: "Movie Details", color: "bg-purple-600", path: "/movie/33633" },
             { text: "Logout", color: "bg-red-600", path: "/login" },
           ].map((btn, index) => (
             <motion.button

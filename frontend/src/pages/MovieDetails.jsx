@@ -79,7 +79,7 @@ const MovieDetails = () => {
       {/* Swiper for Similar Movies */}
       {similarMovies.length > 0 ? (
         <div className="mt-10 w-full max-w-4xl">
-          <h2 className="text-xl font-bold text-gray-300 mb-4">Similar Movies</h2>
+          <h2 className="text-xl font-bold text-gray-300 mb-4">Movies you may also like...</h2>
           <Swiper
             modules={[Navigation, Pagination]}
             spaceBetween={10}
