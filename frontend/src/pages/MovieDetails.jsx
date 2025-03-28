@@ -14,20 +14,22 @@ const MovieDetails = () => {
   const [similarMovies, setSimilarMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [similarLoading, setSimilarLoading] = useState(false);
+  const [showSimilar, setShowSimilar] = useState(false); // Controls visibility of similar movies
 
   useEffect(() => {
     const getMovie = async () => {
+      setLoading(true);
+      setError(null);
+      setMovie(null);
+      setSimilarMovies([]);
+
       try {
         const data = await fetchMovieById(id);
         console.log("Fetched movie data:", data);
         setMovie(data);
-
-        // Fetch similar movies
-        const similarData = await fetchSimilarMovies(id);
-        console.log("Fetched similar movies:", similarData);
-        setSimilarMovies(similarData || []);
       } catch (err) {
-        console.error("Error fetching data:", err);
+        console.error("Error fetching movie data:", err);
         setError("Failed to fetch movie details.");
       } finally {
         setLoading(false);
@@ -37,11 +39,26 @@ const MovieDetails = () => {
     getMovie();
   }, [id]);
 
+  const loadSimilarMovies = async () => {
+    setSimilarLoading(true);
+    setShowSimilar(true); // Ensure UI space is reserved
+    setSimilarMovies([]);
+
+    try {
+      const similarData = await fetchSimilarMovies(id);
+      console.log("Fetched similar movies:", similarData);
+      setSimilarMovies(similarData || []);
+    } catch (err) {
+      console.error("Error fetching similar movies:", err);
+    } finally {
+      setSimilarLoading(false);
+    }
+  };
+
   if (loading) return <p className="text-center text-gray-500">Loading movie...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
   if (!movie) return <p className="text-center text-gray-500">No movie data found.</p>;
 
-  // Adjust title size dynamically based on length
   const titleSize = movie.title?.length > 30 ? "text-xl" : "text-2xl";
 
   return (
@@ -76,9 +93,22 @@ const MovieDetails = () => {
         </div>
       </div>
 
-      {/* Swiper for Similar Movies */}
-      {similarMovies.length > 0 ? (
-        <div className="mt-10 w-full max-w-4xl">
+      {/* Show Similar Movies Button */}
+      <motion.button 
+        className="mt-6 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={loadSimilarMovies}
+      >
+        Show Similar Movies
+      </motion.button>
+
+      {/* Loading message (only visible when showSimilar is true) */}
+      {showSimilar && similarLoading && <p className="mt-2 text-gray-400">Fetching similar movies...</p>}
+
+      {/* Similar Movies Swiper (Hidden until Show Similar is clicked) */}
+      {showSimilar && !similarLoading && similarMovies.length > 0 && (
+        <div className="mt-6 w-full max-w-4xl">
           <h2 className="text-xl font-bold text-gray-300 mb-4">Movies you may also like...</h2>
           <Swiper
             modules={[Navigation, Pagination]}
@@ -109,9 +139,8 @@ const MovieDetails = () => {
             ))}
           </Swiper>
         </div>
-      ) : (
-        <p className="mt-6 text-gray-400">No similar movies found.</p>
       )}
+
     </div>
   );
 };
