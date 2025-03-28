@@ -6,7 +6,7 @@ from backend.database.schemas import MovieCreate, MovieRecommendation
 from sklearn.metrics.pairwise import cosine_similarity
 from backend.cache.redis_cache import redis_cache
 from backend.auth.utils import to_dict
-from fastapi import HTTPException
+from fastapi import HTTPException, Query
 from typing import Optional
 
 class MovieService:
@@ -124,6 +124,47 @@ class MovieService:
             await db.rollback()
             raise HTTPException(status_code=500, detail=f"An error occured: {str(e)}")
         
+    @staticmethod
+    async def search_movies(db: AsyncSession, q: Optional[str] = None, genre: Optional[str] = None):
+        cache_key = f"search_movies:{q}:{genre}"
+        cached_movies = await redis_cache.get_cache(cache_key)
+        if cached_movies:
+            return cached_movies
+
+        query = select(Movie, Poster.image_path).join(Poster, Poster.movie_id == Movie.movie_id, isouter=True)
+
+        if q:
+            query = query.where(Movie.title.ilike(f"%{q}%"))
+        if genre:
+            query = query.where(Movie.genre.ilike(f"%{genre}%"))
+
+        query = query.limit(12)  
+        result = await db.execute(query)
+        movies = result.all()
+
+        if not movies:
+            raise HTTPException(status_code=404, detail="No movies found")
+
+        movies_dict = []
+        seen_movies = {}
+
+        for movie, poster_url in movies:
+            movie_id = movie.movie_id
+            if movie_id not in seen_movies:
+                movie_dict = to_dict(movie)
+                movie_dict["poster_url"] = poster_url
+                seen_movies[movie_id] = movie_dict
+                movies_dict.append(movie_dict)
+
+            else:
+                if "poster_urls" not in seen_movies[movie_id]:
+                    seen_movies[movie_id]["poster_urls"] = []
+                seen_movies[movie_id]["poster_urls"].append(poster_url)
+
+        await redis_cache.set_cache(cache_key, movies_dict, expire=600)
+
+        return movies_dict
+
     @staticmethod
     async def get_similar_movies(movie_id: int, db: AsyncSession, top_n: int = 10):
 

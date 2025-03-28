@@ -9,12 +9,20 @@ const authHeader = () => {
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-export const fetchMovies = async () => {
+export const fetchMovies = async (query = "", genre = "") => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/movies`, { headers: authHeader() });
+    const params = new URLSearchParams();
+    if (query.trim() !== "") params.append("query", query.trim());
+    if (genre.trim() !== "") params.append("genre", genre.trim());
+
+    const response = await axios.get(
+      `${API_BASE_URL}/movies/search${params.toString() ? "?" + params.toString() : ""}`,
+      { headers: authHeader() }
+    );
+
     return response.data;
   } catch (error) {
-    console.error("Error fetching movies:", error);
+    console.error("Error fetching movies:", error.response?.data || error.message);
     return [];
   }
 };

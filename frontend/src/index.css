@@ -67,3 +67,12 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+@keyframes glow {
+  0% { text-shadow: 0 0 2px #3b82f6, 0 0 5px #3b82f6; }
+  50% { text-shadow: 0 0 4px #3b82f6, 0 0 8px #60a5fa; }
+  100% { text-shadow: 0 0 2px #3b82f6, 0 0 5px #3b82f6; }
+}
+
+.neon-glow {
+  animation: glow 1.5s infinite alternate;
+}

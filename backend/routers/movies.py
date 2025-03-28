@@ -23,7 +23,14 @@ router = APIRouter(
 async def create_movie(request: Request, movie: MovieCreate, db: AsyncSession = Depends(get_db),
                   current_user: TokenData = Depends(admin_required)):
     return await MovieService.create_movie(movie, db)
-    
+
+#search movies
+@router.get("/search", response_model=List[MovieResponse])
+@limiter.limit("50/minute")
+async def search_movies(request: Request, query: Optional[str] = None, genre: Optional[str] = None,
+                         db: AsyncSession = Depends(get_db)):
+    return await MovieService.search_movies(db, query, genre)
+
 #get movie by id
 @router.get("/{movie_id}", response_model=MovieDetailResponse, status_code=200)
 @limiter.limit("50/minute")
