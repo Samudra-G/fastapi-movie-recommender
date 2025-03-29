@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { registerUser } from "../services/api";
 import { motion } from "framer-motion";
+import { toast } from "react-hot-toast";
 
 const Signup = () => {
   const [username, setUsername] = useState("");
@@ -15,10 +16,10 @@ const Signup = () => {
     setLoading(true);
     try {
       await registerUser(username, email, password);
-      alert("Signup Successful! Please login.");
-      navigate("/login");
+      toast.success("Signup Successful! Redirecting to login...", { duration: 2000 });
+      setTimeout(() => navigate("/login"), 2000);
     } catch (error) {
-      alert("Signup Failed.");
+      toast.error("Signup Failed. Please try again.");
     }
     setLoading(false);
   };
