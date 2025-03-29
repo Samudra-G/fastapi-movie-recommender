@@ -40,7 +40,7 @@ async def login_user(request: Request, user_credentials: OAuth2PasswordRequestFo
         return {"access_token": access_token, "token_type": "bearer"}
     
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Login failed: {str(e)}")
+        raise HTTPException(status_code=401, detail=f"Login failed: {str(e)}")
 
 @router.post("/signup", response_model=schemas.UserResponse, status_code=201)    
 async def signup(request: Request, user: schemas.UserCreate, db: AsyncSession = Depends(database.get_db)):

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { loginUser } from "../services/api";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import toast from "react-hot-toast"; // ✅ Import toast
 
 const Login = () => {
   const [identifier, setIdentifier] = useState("");
@@ -15,10 +16,10 @@ const Login = () => {
     try {
       const data = await loginUser(identifier, password);
       localStorage.setItem("token", data.access_token);
-      alert("Login Successful!");
+      toast.success("Login Successful! 🎉"); 
       navigate("/dashboard");
     } catch (error) {
-      alert("Login Failed.");
+      toast.error("Login Failed. ❌"); 
     }
     setLoading(false);
   };
