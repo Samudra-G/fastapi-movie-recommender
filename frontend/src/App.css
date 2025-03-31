@@ -32,6 +32,40 @@
   padding: 0;
   min-height: 100vh;
 }
+.genre-scroll-container {
+  width: 100%;
+  max-width: 1000px;
+  overflow-x: auto;
+}
+
+.genre-scroll {
+  display: flex;
+  gap: 10px;
+  white-space: nowrap;
+  overflow-x: auto;
+  padding-bottom: 10px;
+}
+
+.genre-chip {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  background: #333;
+  color: white;
+  transition: 0.3s ease-in-out;
+  font-weight: 500;
+}
+
+.genre-chip:hover {
+  background: #555;
+}
+
+.genre-chip.active {
+  background: #e50914;
+  font-weight: bold;
+}
+
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);

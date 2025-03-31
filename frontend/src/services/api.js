@@ -9,17 +9,22 @@ const authHeader = () => {
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-export const fetchMovies = async (query = "", genre = "") => {
+export const fetchMovies = async (query = "", genre = "", page = 1, perPage = 50) => {
   try {
+    let url = `${API_BASE_URL}/movies/`;
     const params = new URLSearchParams();
-    if (query.trim() !== "") params.append("query", query.trim());
-    if (genre.trim() !== "") params.append("genre", genre.trim());
 
-    const response = await axios.get(
-      `${API_BASE_URL}/movies/search${params.toString() ? "?" + params.toString() : ""}`,
-      { headers: authHeader() }
-    );
+    if (query.trim() !== "") {
+      url += `search`;
+      params.append("query", query.trim());
+    } else {
+      if (genre.trim() !== "") params.append("genre", genre.trim());
+      params.append("page", page);
+      params.append("per_page", perPage);
+    }
 
+    url += `?${params.toString()}`;
+    const response = await axios.get(url, { headers: authHeader() });
     return response.data;
   } catch (error) {
     console.error("Error fetching movies:", error.response?.data || error.message);
@@ -64,7 +69,6 @@ export const registerUser = async (username, email, password) => {
     return response.data;
   } catch (error) {
     console.error("Signup failed:", error.response?.data || error.message);
-    console.error("Full error details:", JSON.stringify(error.response?.data, null, 2));
     throw error;
   }
 };

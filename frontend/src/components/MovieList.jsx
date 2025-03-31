@@ -19,7 +19,7 @@ const MovieList = ({ searchQuery }) => {
       <div className="grid grid-cols-4 gap-6">
         {movies.length > 0 ? (
           movies.slice(0, 12).map((movie) => (
-            <MovieCard key={movie.movie_id || movie.id} movie={movie} />  // Ensure unique key
+            <MovieCard key={movie.movie_id || movie.id} movie={movie} /> 
           ))
         ) : (
           <p>No results found</p>
