@@ -2,11 +2,11 @@ import React, { useEffect, useState } from "react";
 import { fetchUserProfile, logoutUser } from "../services/api";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -15,7 +15,7 @@ const Profile = () => {
         const data = await fetchUserProfile();
         setUser(data);
       } catch (err) {
-        setError("Failed to fetch profile. Please login again.");
+        toast.error("❌ Failed to fetch profile. Please login again.");
       } finally {
         setLoading(false);
       }
@@ -25,12 +25,12 @@ const Profile = () => {
 
   const handleLogout = () => {
     logoutUser();
+    toast.success("👋 Logged out successfully!");
     navigate("/login");
   };
 
   if (loading)
     return <p className="text-center text-gray-500">Loading profile...</p>;
-  if (error) return <p className="text-center text-red-500">{error}</p>;
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">

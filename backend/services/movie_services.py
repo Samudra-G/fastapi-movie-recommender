@@ -87,7 +87,7 @@ class MovieService:
                         seen_movies[movie_id]["poster_urls"] = []
                     seen_movies[movie_id]["poster_urls"].append(poster_url)
 
-            await redis_cache.set_movies_cache(genre, movies_dict, expire=3600)
+            await redis_cache.set_movies_cache(genre, movies_dict, expire=3600, page=page, per_page=per_page)
 
             return movies_dict
         

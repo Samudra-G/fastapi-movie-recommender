@@ -6,6 +6,7 @@ import Signup from "./pages/Signup";
 import MovieDetails from "./pages/MovieDetails";
 import Profile from "./pages/Profile";
 import Dashboard from "./pages/Dashboard";
+import GenreMovies from "./pages/GenreMovies"; 
 import Navbar from "./components/Navbar";
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
         <Route path="/movie/:id" element={<MovieDetails />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/movies/genre/:genre" element={<GenreMovies />} />
       </Routes>
     </Router>
   );

@@ -40,8 +40,9 @@ async def get_movie(request: Request, movie_id: int, db : AsyncSession = Depends
 #get all movies or by genre
 @router.get("/", response_model=List[MovieResponse])
 @limiter.limit("50/minute")
-async def get_movies(request: Request, genre: Optional[str] = None, db: AsyncSession = Depends(get_db)):    
-    return await MovieService.get_movies(genre, db)
+async def get_movies(request: Request, genre: Optional[str] = None, db: AsyncSession = Depends(get_db),
+                     page: int = 1, per_page: int = 50):    
+    return await MovieService.get_movies(genre, db, page, per_page)
 
 #update movie: will add to admin privilege later
 @router.put("/{movie_id}", response_model=MovieResponse, status_code=200)
