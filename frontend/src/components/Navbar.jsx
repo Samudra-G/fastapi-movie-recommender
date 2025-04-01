@@ -7,13 +7,21 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="relative flex justify-between items-center p-4 bg-gray-900 text-white shadow-md">
+    <nav className="relative flex justify-between items-center p-4 bg-black text-white shadow-lg">
       {/* Logo */}
       <h1
-        className="text-4xl font-bold flex items-center gap-2 bg-gradient-to-r from-blue-400 to-purple-500 text-transparent bg-clip-text neon-glow"
-        style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+        className="text-4xl font-bold flex items-center gap-2"
+        style={{
+          fontFamily: "'Bebas Neue', sans-serif",
+          color: "white",  // Ensures the text is visible
+          textShadow: "0 0 6px rgba(0, 0, 255, 0.58), 0 0 10px rgba(0, 0, 255, 0.5)" // Softer neon glow
+        }}
       >
-        <Film size={28} className="text-blue-400" />
+        <img 
+          src="/src/assets/movie-svgrepo-com.svg" 
+          alt="Movie Logo" 
+          className="w-8 h-8" 
+        />
         MoviSk
       </h1>
 
@@ -39,7 +47,7 @@ const Navbar = () => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
-          className="absolute top-full right-0 bg-gray-800 rounded-xl shadow-lg p-4 flex flex-col gap-3 w-48 md:hidden z-50"
+          className="absolute top-full right-0 bg-black rounded-xl shadow-lg p-4 flex flex-col gap-3 w-48 md:hidden z-50"
         >
           <NavLink to="/" text="Dashboard" onClick={() => setIsOpen(false)} />
           <NavLink to="/profile" text="Profile" onClick={() => setIsOpen(false)} />

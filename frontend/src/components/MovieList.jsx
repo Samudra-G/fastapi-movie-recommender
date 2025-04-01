@@ -15,7 +15,7 @@ const MovieList = ({ searchQuery }) => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6">
-      <h2 className="text-2xl font-bold text-white mb-4">Movies</h2>
+      <h2 className="text-2xl font-bold text-white mb-4">Your next watch</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {movies.length > 0 ? (
           movies.slice(0, 12).map((movie) => (
