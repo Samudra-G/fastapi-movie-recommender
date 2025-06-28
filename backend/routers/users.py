@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, BackgroundTasks
+from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
-from backend.database.schemas import UserResponse, UserRoleUpdate
-from backend.database.database import get_db
+from backend.database.schemas import UserResponse, UserRoleUpdate, WatchHistoryOut
+from backend.database.database import get_db, AsyncSessionLocal
 from backend.database.schemas import TokenData
 from backend.auth.oauth2 import get_current_user
 from backend.auth.admin import admin_required
@@ -45,3 +46,43 @@ async def generate_recommendations(user_id: int, db: AsyncSession = Depends(get_
 @router.get("/{user_id}/recommendations")
 async def get_user_recommendations(user_id: int, db: AsyncSession = Depends(get_db), top_n: int = 12):
     return await RecommendationService.get_user_recommendations(user_id, db, top_n)
+
+#Background task job
+async def generate_recommendations_bg(user_id: int):
+    async with AsyncSessionLocal() as db:
+        try:
+            await RecommendationService.generate_recommendations(user_id, db)
+        except Exception as e:
+            print(f"Background generation failed for user {user_id}: {e}")
+
+@router.post("/me/watch/{movie_id}")
+async def add_watch_history(
+    movie_id: int, background_tasks: BackgroundTasks,
+    current_user: TokenData = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    if current_user.id is None:
+        raise ValueError("User ID is missing in token data.")
+    
+    await UserService.add_to_watch_history(current_user.id, movie_id, db)
+    background_tasks.add_task(generate_recommendations_bg, current_user.id)
+
+    return {"message": "Watch history updated. Recommendations are being refreshed in the background."}
+
+@router.get("/me/history", response_model=List[WatchHistoryOut])
+async def get_watch_history(current_user: TokenData = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    if current_user.id is None:
+        raise ValueError("User ID is missing in token data.")
+    return await UserService.get_watch_history(current_user.id, db) 
+
+@router.post("/me/watch/{movie_id}/refresh", status_code=200)
+async def update_watch_and_get_recommendations(
+    movie_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: TokenData = Depends(get_current_user)
+):
+    if current_user.id is None:
+        raise ValueError("User ID is missing")
+
+    await UserService.add_to_watch_history(current_user.id, movie_id, db)
+    await RecommendationService.generate_recommendations(current_user.id, db)
+    
+    return await RecommendationService.get_user_recommendations(current_user.id, db)

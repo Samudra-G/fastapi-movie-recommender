@@ -3,6 +3,14 @@ from typing import List, Optional
 from datetime import datetime, date
 
 #Movie schemas
+class MovieLite(BaseModel):
+    movie_id: int
+    title: str
+    poster_url: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
 class MovieCreate(BaseModel):
     title: str
     genre: Optional[str] = None
@@ -69,3 +77,15 @@ class MovieRecommendation(BaseModel):
 class RecommendationResponse(BaseModel):
     user_id: int
     recommendations: List[MovieRecommendation]
+
+class WatchHistoryCreate(BaseModel):
+    movie_id: int
+    user_id: int
+
+class WatchHistoryOut(BaseModel):
+    watched_at: datetime
+    watch_count: int
+    movie: MovieLite
+
+    class Config:
+        from_attributes = True

@@ -1,6 +1,6 @@
 from backend.database.database  import Base
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Integer, String, ForeignKey, Float, Text, DateTime, Date
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, Text, DateTime, Date, UniqueConstraint, Index
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from datetime import datetime
@@ -99,11 +99,14 @@ class Recommendation(Base):
 
 class WatchHistory(Base):
     __tablename__ = "watch_history"
-
+    __table_args__ = (
+        UniqueConstraint("user_id", "movie_id", name="uix_user_movie"),
+        Index("ix_watch_user", "user_id"),
+    )
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
     movie_id = Column(Integer, ForeignKey("movies.movie_id", ondelete="CASCADE"), nullable=False)
-    watched_at = Column(DateTime, server_default=func.now())
+    watched_at = Column(TIMESTAMP(timezone=True), server_default=func.now(), nullable=False)
     watch_count = Column(Integer, default=1)
 
     # Relationships
