@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { fetchMovieById, fetchSimilarMovies } from "../services/api";
+import { fetchMovieById, fetchSimilarMovies, addToWatchHistory } from "../services/api"; // <-- imported
 import { motion } from "framer-motion";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -15,7 +15,7 @@ const MovieDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [similarLoading, setSimilarLoading] = useState(false);
-  const [showSimilar, setShowSimilar] = useState(false); // Controls visibility of similar movies
+  const [showSimilar, setShowSimilar] = useState(false);
 
   useEffect(() => {
     const getMovie = async () => {
@@ -28,6 +28,14 @@ const MovieDetails = () => {
         const data = await fetchMovieById(id);
         console.log("Fetched movie data:", data);
         setMovie(data);
+
+        // ✅ Add to watch history after fetching movie
+        const token = localStorage.getItem("token");
+        if (token) {
+          await addToWatchHistory(id);
+          console.log("Movie added to watch history");
+        }
+
       } catch (err) {
         console.error("Error fetching movie data:", err);
         setError("Failed to fetch movie details.");
@@ -41,7 +49,7 @@ const MovieDetails = () => {
 
   const loadSimilarMovies = async () => {
     setSimilarLoading(true);
-    setShowSimilar(true); // Ensure UI space is reserved
+    setShowSimilar(true);
     setSimilarMovies([]);
 
     try {
@@ -64,8 +72,6 @@ const MovieDetails = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white p-6">
       <div className="max-w-4xl w-full bg-gray-800 rounded-lg shadow-lg p-6 flex flex-col md:flex-row gap-6">
-        
-        {/* Movie Poster */}
         <motion.img 
           src={movie.poster_url || "/default-poster.jpg"} 
           alt={movie.title} 
@@ -75,7 +81,6 @@ const MovieDetails = () => {
           transition={{ duration: 0.8 }}
         />
 
-        {/* Movie Details */}
         <div className="flex flex-col justify-center">
           <h1 className={`${titleSize} font-bold text-blue-400`}>{movie.title}</h1>
           <p className="text-gray-400 text-sm">
@@ -93,7 +98,6 @@ const MovieDetails = () => {
         </div>
       </div>
 
-      {/* Show Similar Movies Button */}
       <motion.button 
         className="mt-6 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded"
         whileHover={{ scale: 1.05 }}
@@ -103,10 +107,8 @@ const MovieDetails = () => {
         Show Similar Movies
       </motion.button>
 
-      {/* Loading message (only visible when showSimilar is true) */}
       {showSimilar && similarLoading && <p className="mt-2 text-gray-400">Fetching similar movies...</p>}
 
-      {/* Similar Movies Swiper (Hidden until Show Similar is clicked) */}
       {showSimilar && !similarLoading && similarMovies.length > 0 && (
         <div className="mt-6 w-full max-w-4xl">
           <h2 className="text-xl font-bold text-gray-300 mb-4">Movies you may also like...</h2>
@@ -140,7 +142,6 @@ const MovieDetails = () => {
           </Swiper>
         </div>
       )}
-
     </div>
   );
 };

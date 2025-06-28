@@ -2,9 +2,10 @@ import numpy as np
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import delete
+from sqlalchemy.orm import joinedload
 from sklearn.metrics.pairwise import cosine_similarity
 from fastapi import HTTPException
-from backend.models.models import User, Movie, Recommendation
+from backend.models.models import User, Movie, Recommendation, WatchHistory, Poster
 from backend.cache.redis_cache import redis_cache
 from backend.database.schemas import MovieRecommendation, RecommendationResponse
 
@@ -16,63 +17,87 @@ class RecommendationService:
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
+        # Get user's watch history with embeddings
+        result = await db.execute(
+            select(Movie)
+            .join(WatchHistory, WatchHistory.movie_id == Movie.movie_id)
+            .where(WatchHistory.user_id == user_id)
+        )
+        watched_movies = result.scalars().all()
+
+        if not watched_movies:
+            raise HTTPException(status_code=404, detail="No watch history found")
+
+        watched_embeddings = [
+            np.array(movie.embedding) for movie in watched_movies if movie.embedding is not None
+        ]
+        if not watched_embeddings:
+            raise HTTPException(status_code=404, detail="No embeddings in watch history")
+
+        user_embedding = np.mean(watched_embeddings, axis=0).reshape(1, -1)
+
+        # Get all movies not yet watched
         result = await db.execute(select(Movie))
-        movies = result.scalars().all()
+        all_movies = result.scalars().all()
 
-        if not movies:
-            raise HTTPException(status_code=404, detail="No movies available")
+        # Ensure watched_movies is a list of Movie objects
+        watched_ids = set()
+        for m in watched_movies:
+            if hasattr(m, "movie_id"):
+                watched_ids.add(m.movie_id)
 
-        movie_list = []
-        embedding_matrix = []
+        # Collect candidate movies
+        candidate_movies = []
+        candidate_embeddings = []
+        for movie in all_movies:
+            if (
+                hasattr(movie, "embedding") and movie.embedding is not None and
+                hasattr(movie, "movie_id") and movie.movie_id not in watched_ids
+            ):
+                candidate_movies.append(movie)
+                candidate_embeddings.append(movie.embedding)
 
-        for movie in movies:
-            if movie.embedding is not None:
-                movie_list.append(movie)
-                embedding_matrix.append(movie.embedding)
 
-        if not embedding_matrix:
-            raise HTTPException(status_code=404, detail="No valid movie embeddings found")
+        if not candidate_embeddings:
+            raise HTTPException(status_code=404, detail="No new movies to recommend")
 
-        embedding_matrix = np.array(embedding_matrix)
-
-        # Compute user embedding
-        user_embedding = np.mean(embedding_matrix, axis=0).reshape(1, -1)
-        similarities = cosine_similarity(user_embedding, embedding_matrix)[0]
-
-        # Sort movies by similarity
+        candidate_embeddings = np.array(candidate_embeddings)
+        similarities = cosine_similarity(user_embedding, candidate_embeddings)[0]
         sorted_indices = np.argsort(similarities)[::-1][:top_n]
+
         recommendations = [
-            Recommendation(user_id=user_id, movie_id=movie_list[i].movie_id, score=float(similarities[i]))
+            Recommendation(user_id=user_id, movie_id=candidate_movies[i].movie_id, score=float(similarities[i]))
             for i in sorted_indices
         ]
 
-        # Remove old recommendations from Redis
+        # Clean and commit
         await redis_cache.delete_cache(f"recommendations:{user_id}")
-
-        # Delete old recommendations from DB
         await db.execute(delete(Recommendation).where(Recommendation.user_id == user_id))
         db.add_all(recommendations)
+        await db.flush() 
         await db.commit()
 
+        movie_ids = [rec.movie_id for rec in recommendations]
+        result = await db.execute(
+            select(Poster.movie_id, Poster.image_path)
+            .where(Poster.movie_id.in_(movie_ids))
+        )
+        poster_map = {mid: path for mid, path in result.all()}
+
+        # Prepare cache
         recommendations_dict = [
             {
                 "movie_id": rec.movie_id,
-                "title": movie_list[i].title,
-                "genre": movie_list[i].genre,
-                "score": rec.score
+                "title": candidate_movies[i].title,
+                "genre": candidate_movies[i].genre,
+                "score": rec.score,
+                "poster_url": poster_map.get(rec.movie_id)
             }
             for i, rec in enumerate(recommendations)
         ]
-        listed_recommendations = [rec for rec in recommendations_dict]
+        await redis_cache.set_cache(f"recommendations:{user_id}", recommendations_dict, expire=1800)
 
-        await redis_cache.set_cache(
-            f"recommendations:{user_id}", 
-            listed_recommendations,  
-            expire=1800
-        )
-
-        return {"message": "Recommendations generated successfully", "count": len(recommendations)}
-
+        return {"message": "Personalized recommendations generated", "count": len(recommendations)}
 
     @staticmethod
     async def get_user_recommendations(user_id: int, db: AsyncSession, top_n: int = 12) -> RecommendationResponse:
@@ -80,41 +105,54 @@ class RecommendationService:
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
-        cached_recommendations = await redis_cache.get_cache(f"recommendations:{user_id}")
-        if cached_recommendations:
-            return RecommendationResponse(user_id=user_id, recommendations=cached_recommendations[:top_n])
+        # Try cache
+        cached = await redis_cache.get_cache(f"recommendations:{user_id}")
+        if cached:
+            return RecommendationResponse(user_id=user_id, recommendations=cached[:top_n])
 
+        # Fallback to DB
         result = await db.execute(
-            select(Recommendation, Movie)
+            select(Recommendation, Movie, Poster.image_path)
             .join(Movie, Recommendation.movie_id == Movie.movie_id)
+            .join(Poster, Poster.movie_id == Movie.movie_id, isouter=True)
             .where(Recommendation.user_id == user_id)
             .order_by(Recommendation.score.desc())
             .limit(top_n)
         )
+        rows = result.all()
 
-        recommendations = result.all()
-        if not recommendations:
+        if not rows:
             raise HTTPException(status_code=404, detail="No recommendations available")
 
         recommendations_list = [
             MovieRecommendation(
-                movie_id=recommendation.movie_id,
+                movie_id=rec.movie_id,
                 title=movie.title,
                 genre=movie.genre,
-                score=recommendation.score
+                score=rec.score,
+                poster_url=poster_url
             )
-            for recommendation, movie in recommendations  
+            for rec, movie, poster_url in rows
         ]
         listed_recommendations = [rec.model_dump() for rec in recommendations_list]
 
-        await redis_cache.set_cache(f"recommendations:{user_id}", 
-                                    listed_recommendations, expire=1800)
-
+        await redis_cache.set_cache(f"recommendations:{user_id}", listed_recommendations, expire=1800)
         return RecommendationResponse(user_id=user_id, recommendations=recommendations_list)
-        
+
     @staticmethod
     async def ensure_recommendations_exist(user_id: int, db: AsyncSession):
-        cached_recommendations = await redis_cache.get_cache(f"recommendations:{user_id}")
-            
-        if not cached_recommendations:
+        cached = await redis_cache.get_cache(f"recommendations:{user_id}")
+        if cached:
+            return
+        
+        result = await db.execute(
+            select(Recommendation)
+            .where(Recommendation.user_id == user_id)
+            .order_by(Recommendation.score.desc())
+            .limit(1)
+        )
+        row = result.first()
+        if row:
+            await RecommendationService.get_user_recommendations(user_id, db)
+        else:
             await RecommendationService.generate_recommendations(user_id, db)

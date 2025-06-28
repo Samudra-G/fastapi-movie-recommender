@@ -6,6 +6,11 @@ import { Search } from "lucide-react";
 import { fetchMovies } from "../services/api";
 import { debounce } from "lodash";
 import { FaFacebook, FaTwitter, FaInstagram } from "react-icons/fa";
+import { fetchWatchHistory } from "../services/api";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import "swiper/css/navigation";
+import { Navigation } from "swiper/modules";
 
 const genres = [
   "Action",
@@ -34,6 +39,7 @@ const Home = () => {
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [selectedGenre, setSelectedGenre] = useState(null);
+  const [watchHistory, setWatchHistory] = useState([]);
   const searchRef = useRef(null);
   const navigate = useNavigate();
 
@@ -76,6 +82,19 @@ const Home = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+  useEffect(() => {
+  const fetchHistory = async () => {
+    try {
+      const data = await fetchWatchHistory();
+      console.log("Fetched watch history:", data); 
+      setWatchHistory(data);
+    } catch (err) {
+      console.error("Error loading watch history:", err);
+      setWatchHistory([]);
+    }
+  };
+  fetchHistory();
+}, []);
 
   return (
     <motion.div
@@ -122,20 +141,22 @@ const Home = () => {
         </div>
         {query.trim() !== "" && (
           <motion.div
-            className="absolute w-full bg-white/10 p-3 rounded-lg shadow-lg z-10 mt-2 border border-white/20"
+            className="absolute w-full bg-gray-800 p-3 rounded-lg shadow-lg z-10 mt-2 border border-gray-600"
             initial={{ y: -10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.3 }}
           >
+
             {searchResults.length > 0 ? (
               searchResults.map((movie) => (
                 <p
                   key={movie.movie_id}
-                  className="px-2 py-1 hover:bg-white/20 cursor-pointer"
+                  className="px-2 py-1 hover:bg-gray-700 cursor-pointer rounded-md transition"
                   onClick={() => handleMovieClick(movie.movie_id)}
                 >
                   {movie.title}
                 </p>
+
               ))
             ) : (
               <p className="px-2 py-1 text-gray-400 text-center">
@@ -169,15 +190,71 @@ const Home = () => {
           </motion.button>
         ))}
       </motion.div>
+        {watchHistory.length > 0 && (
+  <motion.div
+    className="w-full max-w-screen-xl px-4 mt-10"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ duration: 0.8 }}
+  >
+    <h2 className="text-2xl font-bold mb-4 text-white">Your Watch History</h2>
+    <Swiper
+      modules={[Navigation]}
+      spaceBetween={20}
+      slidesPerView={2}
+      navigation
+      breakpoints={{
+        640: { slidesPerView: 1 },
+        768: { slidesPerView: 2 },
+        1024: { slidesPerView: 4 },
+      }}
+    >
+      {watchHistory.map((entry) => (
+        <SwiperSlide key={entry.movie.movie_id}>
+          <motion.div
+            whileHover={{ scale: 1.03 }}
+            className="bg-white/10 rounded-xl overflow-hidden shadow-lg cursor-pointer"
+            onClick={() => handleMovieClick(entry.movie.movie_id)}
+          >
+            <img
+              src={entry.movie.poster_url}
+              alt={entry.movie.title}
+               className="w-full h-auto max-h-72 object-contain bg-black"
+            />
+            <div className="p-3 text-white">
+              <h3 className="text-lg font-semibold truncate">{entry.movie.title}</h3>
+              <p className="text-sm text-gray-400">
+                Watched on {new Date(entry.watched_at).toLocaleDateString()}
+              </p>
+            </div>
+          </motion.div>
+        </SwiperSlide>
+      ))}
 
-      {/* Movie List */}
+    </Swiper>
+  </motion.div>
+)}
+
+      {/* Recommended Movies */}
       <motion.div
-        className="w-full max-w-screen-xl px-4 mt-6"
+        className="w-full max-w-screen-xl px-4 mt-10"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
       >
-        <MovieList selectedGenre={selectedGenre} />
+        <h2 className="text-2xl font-bold mb-4 text-white">🔥 Recommended for You</h2>
+        <MovieList mode="recommendations" />
+      </motion.div>
+
+      {/* All Movies */}
+      <motion.div
+        className="w-full max-w-screen-xl px-4 mt-10"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.2 }}
+      >
+        <h2 className="text-2xl font-bold mb-4 text-white">🎬 Explore All Movies</h2>
+        <MovieList selectedGenre={selectedGenre} mode="all" />
       </motion.div>
 
       {/* Footer */}

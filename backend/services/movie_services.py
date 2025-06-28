@@ -1,4 +1,5 @@
 import numpy as np
+import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from backend.models.models import Movie, Poster
@@ -8,6 +9,8 @@ from backend.cache.redis_cache import redis_cache
 from backend.auth.utils import to_dict
 from fastapi import HTTPException, Query
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 class MovieService:
 
@@ -45,11 +48,18 @@ class MovieService:
             raise HTTPException(status_code=404, detail="Movie not found.")
 
         movie, poster_url = row  
-        movie_dict = to_dict(movie)
+        try:
+            movie_dict = to_dict(movie)
+        except Exception as e:
+            logger.error("to_dict failed: ", e)
+            raise 
         movie_dict["poster_url"] = poster_url 
 
-        await redis_cache.set_cache(cache_key, movie_dict, expire=3600)
-
+        try:
+            await redis_cache.set_cache(cache_key, movie_dict, expire=3600)
+        except Exception as e:
+            logger.error("set_cache failed: ", e)
+            raise 
         return movie_dict
 
     @staticmethod
@@ -87,7 +97,7 @@ class MovieService:
                         seen_movies[movie_id]["poster_urls"] = []
                     seen_movies[movie_id]["poster_urls"].append(poster_url)
 
-            await redis_cache.set_movies_cache(genre, movies_dict, expire=3600, page=page, per_page=per_page)
+            await redis_cache.set_movies_cache(genre, movies_dict, expire=3600, per_page=per_page)
 
             return movies_dict
         

@@ -9,7 +9,14 @@ const authHeader = () => {
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-export const fetchMovies = async (query = "", genre = "", page = 1, perPage = 50) => {
+export const fetchMovies = async (
+  query = "",
+  genre = "",
+  page = 1,
+  perPage = 50
+) => {
+  query = query || "";
+  genre = genre || "";
   try {
     let url = `${API_BASE_URL}/movies/`;
     const params = new URLSearchParams();
@@ -27,18 +34,36 @@ export const fetchMovies = async (query = "", genre = "", page = 1, perPage = 50
     const response = await axios.get(url, { headers: authHeader() });
     return response.data;
   } catch (error) {
-    console.error("Error fetching movies:", error.response?.data || error.message);
+    console.error(
+      "Error fetching movies:",
+      error.response?.data || error.message
+    );
     return [];
   }
 };
 
 export const fetchMovieById = async (movieId) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/movies/${movieId}`, { headers: authHeader() });
+    const response = await axios.get(`${API_BASE_URL}/movies/${movieId}`, {
+      headers: authHeader(),
+    });
     return response.data;
   } catch (error) {
     console.error("Error fetching movie:", error);
     return null;
+  }
+};
+
+export const fetchSimilarMovies = async (movieId) => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/movies/${movieId}/similar`,
+      { headers: authHeader() }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching similar movies:", error);
+    return [];
   }
 };
 
@@ -52,10 +77,36 @@ export const loginUser = async (username, password) => {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
     });
 
+    localStorage.setItem("token", response.data.access_token);
+    const user = await fetchUserProfile();
+    await generateRecommendations(user.user_id);
+
     return response.data;
   } catch (error) {
     console.error("Login failed:", error.response?.data || error.message);
     throw error;
+  }
+};
+
+export const fetchRecommendations = async (topN = 12) => {
+  try {
+    const user = await fetchUserProfile();
+    console.log("User fetched for recommendations:", user);
+    const userId = user.user_id || user.id;
+    const res = await axios.get(
+      `${API_BASE_URL}/users/${userId}/recommendations?top_n=${topN}`,
+      {
+        headers: authHeader(),
+      }
+    );
+    console.log("Recommendations response:", res.data);
+    return res.data;
+  } catch (error) {
+    console.error(
+      "Failed to fetch recommendations:",
+      error.response?.data || error.message
+    );
+    return { recommendations: [] };
   }
 };
 
@@ -88,17 +139,61 @@ export const fetchUserProfile = async () => {
 
     return response.data;
   } catch (error) {
-    console.error("Error fetching user profile:", error.response?.data || error.message);
+    console.error(
+      "Error fetching user profile:",
+      error.response?.data || error.message
+    );
     throw error;
   }
 };
 
-export const fetchSimilarMovies = async (movieId) => {
+export const addToWatchHistory = async (movieId) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/movies/${movieId}/similar`, { headers: authHeader() });
+    const response = await axios.post(
+      `${API_BASE_URL}/users/me/watch/${movieId}`,
+      {},
+      {
+        headers: authHeader(),
+      }
+    );
     return response.data;
   } catch (error) {
-    console.error("Error fetching similar movies:", error);
+    console.error(
+      "Error adding to watch history:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const fetchWatchHistory = async () => {
+  try {
+    const res = await axios.get(`${API_BASE_URL}/users/me/history`, {
+      headers: authHeader(),
+    });
+    return res.data;
+  } catch (err) {
+    console.error(
+      "Failed to fetch watch history:",
+      err.response?.data || err.message
+    );
     return [];
+  }
+};
+
+export const generateRecommendations = async (userId) => {
+  try {
+    const res = await axios.post(
+      `${API_BASE_URL}/users/${userId}/recommendations`,
+      {},
+      { headers: authHeader() }
+    );
+    return res.data;
+  } catch (error) {
+    console.error(
+      "Failed to generate recommendations:",
+      error.response?.data || error.message
+    );
+    throw error;
   }
 };
