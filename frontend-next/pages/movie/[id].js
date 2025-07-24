@@ -1,7 +1,11 @@
 // pages/movie/[id].js
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { fetchMovieById, fetchSimilarMovies, addToWatchHistory } from "../../services/api";
+import {
+  fetchMovieById,
+  fetchSimilarMovies,
+  addToWatchHistory,
+} from "../../services/api";
 import { motion } from "framer-motion";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -22,7 +26,8 @@ const MovieDetailPage = () => {
   const [showSimilar, setShowSimilar] = useState(false);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || isNaN(id)) return; // Ensure it's not undefined and a valid ID
+
     const getMovie = async () => {
       setLoading(true);
       setError(null);
@@ -30,15 +35,19 @@ const MovieDetailPage = () => {
       setSimilarMovies([]);
       try {
         const data = await fetchMovieById(id);
+        if (!data) throw new Error("Movie not found"); // avoid undefined movie later
         setMovie(data);
+
         const token = localStorage.getItem("token");
         if (token) await addToWatchHistory(id);
       } catch (err) {
+        console.error("Movie Fetch Error:", err);
         setError("Failed to fetch movie details.");
       } finally {
         setLoading(false);
       }
     };
+
     getMovie();
   }, [id]);
 
@@ -56,9 +65,11 @@ const MovieDetailPage = () => {
     }
   };
 
-  if (loading) return <p className="text-center text-gray-500">Loading movie...</p>;
+  if (loading)
+    return <p className="text-center text-gray-500">Loading movie...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
-  if (!movie) return <p className="text-center text-gray-500">No movie data found.</p>;
+  if (!movie)
+    return <p className="text-center text-gray-500">No movie data found.</p>;
 
   const titleSize = movie.title?.length > 30 ? "text-xl" : "text-2xl";
 
@@ -75,11 +86,16 @@ const MovieDetailPage = () => {
         />
 
         <div className="flex flex-col justify-center">
-          <h1 className={`${titleSize} font-bold text-blue-400`}>{movie.title}</h1>
+          <h1 className={`${titleSize} font-bold text-blue-400`}>
+            {movie.title}
+          </h1>
           <p className="text-gray-400 text-sm">
-            {movie.genre || "Unknown Genre"} | {new Date(movie.release_date).toDateString()}
+            {movie.genre || "Unknown Genre"} |{" "}
+            {new Date(movie.release_date).toDateString()}
           </p>
-          <p className="mt-4 text-gray-300 text-sm">{movie.overview || "No overview available."}</p>
+          <p className="mt-4 text-gray-300 text-sm">
+            {movie.overview || "No overview available."}
+          </p>
 
           <motion.button
             className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
@@ -100,11 +116,15 @@ const MovieDetailPage = () => {
         Show Similar Movies
       </motion.button>
 
-      {showSimilar && similarLoading && <p className="mt-2 text-gray-400">Fetching similar movies...</p>}
+      {showSimilar && similarLoading && (
+        <p className="mt-2 text-gray-400">Fetching similar movies...</p>
+      )}
 
       {showSimilar && !similarLoading && similarMovies.length > 0 && (
         <div className="mt-6 w-full max-w-4xl">
-          <h2 className="text-xl font-bold text-gray-300 mb-4">Movies you may also like...</h2>
+          <h2 className="text-xl font-bold text-gray-300 mb-4">
+            Movies you may also like...
+          </h2>
           <Swiper
             modules={[Navigation, Pagination]}
             spaceBetween={10}
@@ -118,7 +138,10 @@ const MovieDetailPage = () => {
             className="rounded-lg overflow-hidden"
           >
             {similarMovies.map((simMovie) => (
-              <SwiperSlide key={simMovie.movie_id} className="bg-gray-700 p-3 rounded-lg">
+              <SwiperSlide
+                key={simMovie.movie_id}
+                className="bg-gray-700 p-3 rounded-lg"
+              >
                 <Link href={`/movie/${simMovie.movie_id}`} className="block">
                   <motion.img
                     src={simMovie.poster_url || "/default-poster.jpg"}
@@ -127,7 +150,9 @@ const MovieDetailPage = () => {
                     whileHover={{ scale: 1.05 }}
                   />
                   <p className="mt-2 text-sm text-gray-300 font-medium text-center">
-                    {simMovie.title.length > 20 ? simMovie.title.slice(0, 17) + "..." : simMovie.title}
+                    {simMovie.title.length > 20
+                      ? simMovie.title.slice(0, 17) + "..."
+                      : simMovie.title}
                   </p>
                 </Link>
               </SwiperSlide>

@@ -1,51 +1,94 @@
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import { fetchMovies } from "../services/api";
 import { motion } from "framer-motion";
+import { Typewriter } from "react-simple-typewriter";
 
 const Dashboard = () => {
+  const [randomMovie, setRandomMovie] = useState(null);
   const router = useRouter();
 
-  const buttons = [
-    { text: "Home", color: "bg-blue-600", path: "/" },
-    { text: "Profile", color: "bg-green-600", path: "/profile" },
-    { text: "Movie Details", color: "bg-purple-600", path: "/movie/33633" },
-    { text: "Logout", color: "bg-red-600", path: "/login" },
-  ];
+  useEffect(() => {
+    const loadRandomMovie = async () => {
+      const movies = await fetchMovies("", "", 1, 100);
+      if (movies?.length) {
+        const random = movies[Math.floor(Math.random() * movies.length)];
+        setRandomMovie(random);
+      }
+    };
+    loadRandomMovie();
+  }, []);
+
+  if (!randomMovie) return null;
 
   return (
-    <section className="bg-gradient-to-br from-gray-900 via-black to-gray-800 min-h-screen flex flex-col items-center justify-center p-6">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="relative w-full max-w-3xl bg-white/10 backdrop-blur-md shadow-lg rounded-2xl border border-white/20 p-8 text-center"
-      >
-        <h1 className="text-3xl font-extrabold text-blue-400 drop-shadow-lg mb-6">
-          Dashboard
-        </h1>
+    <div className="relative min-h-screen w-full overflow-hidden text-white flex items-center justify-center px-6">
+      {/* Blurred background */}
+      <img
+        src={randomMovie.poster_url}
+        alt="Background"
+        className="absolute inset-0 w-full h-full object-cover blur-lg opacity-30 scale-110"
+      />
 
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black/80" />
+
+      {/* Content */}
+      <div className="relative z-10 max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+        {/* Poster */}
+        <motion.img
+          src={randomMovie.poster_url}
+          alt={randomMovie.title}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8 }}
+          className="rounded-xl w-full max-w-xs mx-auto shadow-xl"
+        />
+
+        {/* Text Content */}
         <motion.div
-          className="grid grid-cols-2 gap-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.9 }}
+          className="text-center md:text-left"
         >
-          {buttons.map((btn, index) => (
-            <motion.button
-              key={index}
-              onClick={() => router.push(btn.path)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className={`${btn.color} text-white font-bold p-4 rounded-lg shadow-md transition-all hover:shadow-xl hover:${btn.color.replace(
-                "600",
-                "700"
-              )}`}
-            >
-              {btn.text}
-            </motion.button>
-          ))}
+          <h1
+            className="text-5xl font-bold mb-4 tracking-wide"
+            style={{
+              fontFamily: "'Bebas Neue', sans-serif",
+              textShadow: "0 0 10px rgba(255,255,255,0.2)",
+            }}
+          >
+            {randomMovie.title?.toUpperCase()}
+          </h1>
+
+          <p className="text-lg text-slate-300 mb-6">
+            <Typewriter
+              words={[
+                "Movies move us like nothing else can.",
+                "They transport us to other worlds...",
+                "Spark new ideas and rekindle old ones.",
+              ]}
+              loop={false}
+              cursor
+              cursorStyle="|"
+              typeSpeed={50}
+              deleteSpeed={30}
+              delaySpeed={3000}
+            />
+          </p>
+
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => router.push(`/movie/${randomMovie.movie_id}`)}
+            className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-xl text-lg font-semibold shadow-md transition"
+          >
+            🎬 Watch Now
+          </motion.button>
         </motion.div>
-      </motion.div>
-    </section>
+      </div>
+    </div>
   );
 };
 
