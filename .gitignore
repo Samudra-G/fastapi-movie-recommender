@@ -6,7 +6,7 @@ __pycache__/
 *.pyd
 
 # Environment variables
-.env
+*.env*
 
 # Docker-related files (optional)
 *.log
