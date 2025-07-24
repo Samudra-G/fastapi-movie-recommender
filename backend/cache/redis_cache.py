@@ -84,9 +84,7 @@ class RedisCache:
             f"{redis_key_prefix}:total_pages", expire, total_pages
         )
 
-    async def get_movies_cache(
-        self, genre: Optional[str], page: int = 1, per_page: int = 50
-    ) -> list[dict]:
+    async def get_movies_cache(self, genre: Optional[str], page: int = 1, per_page: int = 50) -> Optional[list[dict]]:
         self.is_connected()
         assert self.redis is not None
 
@@ -94,10 +92,13 @@ class RedisCache:
         movies_data = await self.redis.get(redis_key)
 
         if not movies_data:
-            return []
+            return None
 
-        movies = ujson.loads(movies_data)
-        return movies
+        try:
+            return ujson.loads(movies_data)
+        except Exception as e:
+            print("Cache decode failed:", e)
+            return None
 
     async def preload_movies(self):
         self.is_connected()

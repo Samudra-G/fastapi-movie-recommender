@@ -85,15 +85,17 @@ class RecommendationService:
         poster_map = {mid: path for mid, path in result.all()}
 
         # Prepare cache
+        movie_lookup = {movie.movie_id: movie for movie in candidate_movies}
+
         recommendations_dict = [
             {
                 "movie_id": rec.movie_id,
-                "title": candidate_movies[i].title,
-                "genre": candidate_movies[i].genre,
+                "title": movie_lookup[rec.movie_id].title,
+                "genre": movie_lookup[rec.movie_id].genre,
                 "score": rec.score,
                 "poster_url": poster_map.get(rec.movie_id)
             }
-            for i, rec in enumerate(recommendations)
+            for rec in recommendations if rec.movie_id in movie_lookup
         ]
         await redis_cache.set_cache(f"recommendations:{user_id}", recommendations_dict, expire=1800)
 
