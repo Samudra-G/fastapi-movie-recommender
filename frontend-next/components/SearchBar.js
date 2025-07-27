@@ -44,7 +44,7 @@ export default function SearchBar() {
 
   return (
     <motion.div
-      className="relative w-[90%] max-w-lg mt-6"
+      className="relative w-[90%] max-w-lg mt-3"
       ref={searchRef}
       initial={{ scale: 0.9, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
@@ -56,9 +56,12 @@ export default function SearchBar() {
           placeholder="Search for movies..."
           value={query}
           onChange={handleChange}
-          className="w-full px-4 py-3 pr-12 rounded-lg bg-white/10 text-white focus:ring-2 focus:ring-blue-400 text-lg backdrop-blur-xl placeholder-gray-400"
+          className="w-full px-3 py-1.5 pr-10 rounded-md bg-white/10 text-white focus:ring-2 focus:ring-blue-400 text-sm backdrop-blur-xl placeholder-gray-400"
         />
-        <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-blue-400" size={22} />
+        <Search
+          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-400"
+          size={18}
+        />
       </div>
 
       {query.trim() !== "" && (
@@ -79,7 +82,9 @@ export default function SearchBar() {
               </p>
             ))
           ) : (
-            <p className="px-2 py-1 text-gray-400 text-center">No Movies Found</p>
+            <p className="px-2 py-1 text-gray-400 text-center">
+              No Movies Found
+            </p>
           )}
         </motion.div>
       )}

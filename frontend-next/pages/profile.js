@@ -37,15 +37,17 @@ const Profile = () => {
     );
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
+    <div className="flex justify-center items-center min-h-screen bg-[#1e1e1e]">
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="relative p-6 w-[400px] bg-white/10 backdrop-blur-md shadow-lg rounded-2xl border border-white/20"
+        className="relative p-6 w-[400px] bg-white/10 backdrop-blur-md shadow-xl rounded-2xl border border-white/20"
       >
         <motion.img
-          src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || "User"}`}
+          src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${
+            user?.name || "User"
+          }`}
           alt="Profile Avatar"
           className="w-24 h-24 rounded-full mx-auto border-4 border-blue-500"
           initial={{ y: -20, opacity: 0 }}

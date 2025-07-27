@@ -61,15 +61,17 @@ const MovieList = ({ searchQuery = "", selectedGenre = "", mode = "all" }) => {
   }, [searchQuery, selectedGenre, mode]);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
       {mode === "recommendations" && movies === null ? (
         <p className="text-white col-span-full">
           No recommendations available for guest users.
         </p>
       ) : movies && movies.length > 0 ? (
-        movies.slice(0, 12).map((movie) => (
-          <MovieCard key={movie.movie_id || movie.id} movie={movie} />
-        ))
+        movies
+          .slice(0, 12)
+          .map((movie) => (
+            <MovieCard key={movie.movie_id || movie.id} movie={movie} />
+          ))
       ) : (
         <p className="text-white col-span-full">No results found.</p>
       )}

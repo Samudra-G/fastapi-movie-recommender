@@ -40,35 +40,34 @@ export default function WatchHistory() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
     >
-      <h2 className="text-2xl font-bold mb-4 text-white">Your Watch History</h2>
+      <h2 className="text-2xl font-bold mb-6 text-white">Continue Browsing</h2>
       <Swiper
         modules={[Navigation]}
-        spaceBetween={20}
+        spaceBetween={16}
         slidesPerView={2}
         navigation
         breakpoints={{
-          640: { slidesPerView: 1 },
-          768: { slidesPerView: 2 },
-          1024: { slidesPerView: 4 },
+          640: { slidesPerView: 2 },
+          768: { slidesPerView: 3 },
+          1024: { slidesPerView: 5 },
         }}
       >
         {history.map((entry) => (
           <SwiperSlide key={entry.movie.movie_id}>
             <motion.div
-              whileHover={{ scale: 1.03 }}
-              className="bg-white/10 rounded-xl overflow-hidden shadow-lg cursor-pointer"
+              whileHover={{ scale: 1.01 }} // Slight outer scale for the card
+              className="rounded-xl overflow-hidden cursor-pointer relative group transition-transform duration-300"
               onClick={() => router.push(`/movie/${entry.movie.movie_id}`)}
             >
-              <img
-                src={entry.movie.poster_url}
-                alt={entry.movie.title}
-                className="w-full h-auto max-h-72 object-contain bg-black"
-              />
-              <div className="p-3 text-white">
-                <h3 className="text-lg font-semibold truncate">{entry.movie.title}</h3>
-                <p className="text-sm text-gray-400">
-                  Watched on {new Date(entry.watched_at).toLocaleDateString()}
-                </p>
+              <div className="overflow-hidden rounded-xl">
+                <img
+                  src={entry.movie.poster_url}
+                  alt={entry.movie.title}
+                  className="w-full h-[250px] object-cover transform transition-transform duration-300 group-hover:scale-110"
+                />
+              </div>
+              <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                Watched on {new Date(entry.watched_at).toLocaleDateString()}
               </div>
             </motion.div>
           </SwiperSlide>

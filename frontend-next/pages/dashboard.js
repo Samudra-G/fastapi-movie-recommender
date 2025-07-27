@@ -19,10 +19,13 @@ const Dashboard = () => {
     loadRandomMovie();
   }, []);
 
-  if (!randomMovie) return null;
+  if (!randomMovie || !randomMovie.poster_url) {
+    console.warn("Movie not ready or missing poster_url", randomMovie);
+    return null;
+  }
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden text-white flex items-center justify-center px-6">
+    <div className="relative min-h-screen w-full overflow-hidden text-white flex items-center justify-center px-6 pt-18">
       {/* Blurred background */}
       <img
         src={randomMovie.poster_url}
@@ -39,10 +42,14 @@ const Dashboard = () => {
         <motion.img
           src={randomMovie.poster_url}
           alt={randomMovie.title}
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, scale: 0.85 }}
+          animate={{ opacity: 1, scale: 0.95 }}
           transition={{ duration: 0.8 }}
-          className="rounded-xl w-full max-w-xs mx-auto shadow-xl"
+          className="rounded-2xl w-full max-w-xs h-auto mx-auto 
+     shadow-[0_10px_20px_rgba(0,0,0,0.6),_0_6px_6px_rgba(0,0,0,0.5)] 
+     border border-slate-800 
+     hover:shadow-[0_12px_28px_rgba(0,0,0,0.7),_0_8px_8px_rgba(0,0,0,0.5)] 
+     transition-all duration-300 ease-in-out"
         />
 
         {/* Text Content */}
