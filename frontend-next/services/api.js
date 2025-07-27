@@ -17,6 +17,7 @@ export const fetchMovies = async (
 ) => {
   query = query || "";
   genre = genre || "";
+
   try {
     let url = `${API_BASE_URL}/movies/`;
     const params = new URLSearchParams();
@@ -32,7 +33,13 @@ export const fetchMovies = async (
 
     url += `?${params.toString()}`;
     const response = await axios.get(url, { headers: authHeader() });
-    return response.data;
+
+    const movies = response.data || [];
+
+    //Validating movie
+    const validated = movies.filter((movie) => movie.poster_url);
+
+    return validated;
   } catch (error) {
     console.error(
       "Error fetching movies:",
@@ -106,7 +113,6 @@ export const loginUser = async (username, password) => {
   }
 };
 
-
 export const fetchRecommendations = async (topN = 12) => {
   try {
     const user = await fetchUserProfile();
@@ -121,11 +127,13 @@ export const fetchRecommendations = async (topN = 12) => {
 
     return res.data;
   } catch (error) {
-    console.warn("User not logged in or recommendation fetch failed:", error.message);
+    console.warn(
+      "User not logged in or recommendation fetch failed:",
+      error.message
+    );
     return { recommendations: [] };
   }
 };
-
 
 export const registerUser = async (username, email, password) => {
   try {
@@ -171,7 +179,6 @@ export const fetchUserProfile = async () => {
     throw error;
   }
 };
-
 
 export const addToWatchHistory = async (movieId) => {
   try {

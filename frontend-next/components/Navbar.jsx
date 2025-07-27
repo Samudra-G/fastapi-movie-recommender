@@ -4,29 +4,43 @@ import { useState } from "react";
 import Link from "next/link";
 import { Film, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import SearchBar from "./SearchBar"; // ✅ Adjust path if needed
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 backdrop-blur-sm bg-[#1e1e1e]/60 border-b border-white/10 px-6 py-4 flex justify-between items-center">
-      {/* Logo */}
-      <Link href="/" className="flex items-center gap-2 text-3xl font-bold tracking-wide">
-        <Film className="w-7 h-7 text-blue-400 drop-shadow" />
-        <span
-          style={{
-            fontFamily: "'Bebas Neue', sans-serif",
-            color: "white",
-            textShadow:
-              "0 0 6px rgba(0, 0, 255, 0.5), 0 0 10px rgba(0, 0, 255, 0.3)",
-          }}
+    <nav className="fixed top-0 left-0 w-full z-50 backdrop-blur-sm bg-[#1e1e1e]/60 border-b border-white/10 px-6 py-4 flex items-center justify-between">
+      {/* Left: Logo + SearchBar */}
+      <div className="flex items-center gap-4 w-full max-w-[60%]">
+        {/* Logo */}
+        <Link
+          href="/"
+          className="flex items-center gap-2 text-3xl font-bold tracking-wide shrink-0"
         >
-          MoviSk
-        </span>
-      </Link>
+          <Film className="w-7 h-7 text-blue-400 drop-shadow" />
+          <span
+            style={{
+              fontFamily: "'Bebas Neue', sans-serif",
+              color: "white",
+              textShadow:
+                "0 0 6px rgba(0, 0, 255, 0.5), 0 0 10px rgba(0, 0, 255, 0.3)",
+            }}
+          >
+            MoviSk
+          </span>
+        </Link>
 
-      {/* Desktop Nav */}
-      <div className="hidden md:flex gap-6 text-white text-lg font-medium">
+        {/* Desktop Search */}
+        <div className="hidden md:flex items-center flex-1 -mt-2.5">
+          <div className="w-full max-w-md">
+            <SearchBar />
+          </div>
+        </div>
+      </div>
+
+      {/* Right: Desktop NavLinks */}
+      <div className="hidden md:flex items-center gap-6 text-white text-lg font-medium ml-auto">
         <NavLink to="/dashboard" text="Dashboard" />
         <NavLink to="/" text="Home" />
         <NavLink to="/profile" text="Profile" />
@@ -36,7 +50,7 @@ const Navbar = () => {
 
       {/* Mobile Toggle */}
       <button
-        className="md:hidden p-2 rounded-md text-white hover:bg-white/10 transition"
+        className="md:hidden p-2 rounded-md text-white hover:bg-white/10 transition ml-auto"
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Toggle Menu"
       >
@@ -53,11 +67,27 @@ const Navbar = () => {
             transition={{ duration: 0.2 }}
             className="absolute top-full right-4 mt-2 bg-[#1e1e1e] text-white rounded-xl shadow-xl p-4 flex flex-col gap-4 w-44 md:hidden"
           >
-            <NavLink to="/dashboard" text="Dashboard" onClick={() => setIsOpen(false)} />
+            <NavLink
+              to="/dashboard"
+              text="Dashboard"
+              onClick={() => setIsOpen(false)}
+            />
             <NavLink to="/" text="Home" onClick={() => setIsOpen(false)} />
-            <NavLink to="/profile" text="Profile" onClick={() => setIsOpen(false)} />
-            <NavLink to="/login" text="Login" onClick={() => setIsOpen(false)} />
-            <NavLink to="/signup" text="Signup" onClick={() => setIsOpen(false)} />
+            <NavLink
+              to="/profile"
+              text="Profile"
+              onClick={() => setIsOpen(false)}
+            />
+            <NavLink
+              to="/login"
+              text="Login"
+              onClick={() => setIsOpen(false)}
+            />
+            <NavLink
+              to="/signup"
+              text="Signup"
+              onClick={() => setIsOpen(false)}
+            />
           </motion.div>
         )}
       </AnimatePresence>

@@ -16,7 +16,9 @@ const Signup = () => {
     setLoading(true);
     try {
       await registerUser(username, email, password);
-      toast.success("Signup Successful! Redirecting to login...", { duration: 2000 });
+      toast.success("Signup Successful! Redirecting to login...", {
+        duration: 2000,
+      });
       setTimeout(() => router.push("/login"), 2000);
     } catch (error) {
       toast.error("Signup Failed. Please try again.");
@@ -25,19 +27,23 @@ const Signup = () => {
   };
 
   return (
-    <section className="bg-gray-50 dark:bg-gray-900 min-h-screen flex items-center justify-center">
+    <section className="min-h-screen flex items-center justify-center bg-[#1e1e1e] px-4 pt-24 pb-10">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="w-full max-w-md bg-white rounded-lg shadow-md dark:border dark:bg-gray-800 dark:border-gray-700 p-8"
+        className="w-full max-w-md backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl shadow-xl p-8"
       >
-        <h1 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-6">
+        <h1 className="text-2xl font-bold text-center text-white mb-6">
           Create an account
         </h1>
         <form className="space-y-4" onSubmit={handleSignup}>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <label className="block mb-2 text-sm font-medium text-white">
               Username
             </label>
             <input
@@ -46,11 +52,16 @@ const Signup = () => {
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Enter username"
               required
-              className="w-full p-3 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+              className="w-full p-3 bg-blue-400/10 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 transition"
             />
           </motion.div>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <label className="block mb-2 text-sm font-medium text-white">
               Email
             </label>
             <input
@@ -59,11 +70,16 @@ const Signup = () => {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter email"
               required
-              className="w-full p-3 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+              className="w-full p-3 bg-blue-400/10 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 transition"
             />
           </motion.div>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-            <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <label className="block mb-2 text-sm font-medium text-white">
               Password
             </label>
             <input
@@ -72,9 +88,10 @@ const Signup = () => {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
-              className="w-full p-3 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+              className="w-full p-3 bg-blue-400/10 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 transition"
             />
           </motion.div>
+
           <motion.button
             whileTap={{ scale: 0.95 }}
             type="submit"
@@ -87,11 +104,11 @@ const Signup = () => {
           >
             {loading ? "Signing up..." : "Sign up"}
           </motion.button>
-          <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
+          <p className="text-sm text-gray-400 text-center">
             Already have an account?{" "}
             <a
               href="/login"
-              className="font-medium text-blue-600 hover:underline dark:text-blue-500"
+              className="font-medium text-blue-400 hover:underline"
             >
               Sign in
             </a>

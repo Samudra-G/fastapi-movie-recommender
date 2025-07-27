@@ -27,22 +27,22 @@ const Login = () => {
   return (
     <motion.section
       initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
+      animate={{ opacity: 1, scale: 0.95 }}
       transition={{ duration: 0.5 }}
-      className="bg-gray-50 dark:bg-gray-900 min-h-screen flex items-center justify-center"
+      className="bg-[#1e1e1e] min-h-screen flex items-center justify-center"
     >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full max-w-md bg-white rounded-lg shadow-md dark:border dark:bg-gray-800 dark:border-gray-700 p-8"
+        className="w-full max-w-md bg-white/10 backdrop-blur-md shadow-lg rounded-2xl border border-white/20 p-8"
       >
-        <h1 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-6">
+        <h1 className="text-2xl font-bold text-center text-gray-100 mb-6">
           Sign in to your account
         </h1>
         <form className="space-y-4" onSubmit={handleLogin}>
           <div>
-            <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            <label className="block mb-2 text-sm font-medium text-gray-300">
               Username or Email
             </label>
             <input
@@ -51,11 +51,11 @@ const Login = () => {
               onChange={(e) => setIdentifier(e.target.value)}
               placeholder="Enter username or email"
               required
-              className="w-full p-3 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+              className="w-full p-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400"
             />
           </div>
           <div>
-            <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            <label className="block mb-2 text-sm font-medium text-gray-300">
               Password
             </label>
             <input
@@ -64,18 +64,18 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
-              className="w-full p-3 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+              className="w-full p-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400"
             />
           </div>
           <div className="flex items-center justify-between">
-            <label className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-300">
+            <label className="flex items-center space-x-2 text-sm text-gray-400">
               <input
                 type="checkbox"
-                className="w-4 h-4 border border-gray-300 rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 focus:ring-blue-500"
+                className="w-4 h-4 border border-gray-300 rounded bg-gray-700 dark:border-gray-600 focus:ring-blue-500"
               />
               <span>Remember me</span>
             </label>
-            <a href="#" className="text-sm font-medium text-blue-600 hover:underline dark:text-blue-500">
+            <a href="#" className="text-sm font-medium text-blue-500 hover:underline">
               Forgot password?
             </a>
           </div>
@@ -91,12 +91,9 @@ const Login = () => {
           >
             {loading ? "Logging in..." : "Sign in"}
           </motion.button>
-          <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
+          <p className="text-sm text-gray-400 text-center">
             Don’t have an account yet?{" "}
-            <a
-              href="/signup"
-              className="font-medium text-blue-600 hover:underline dark:text-blue-500"
-            >
+            <a href="/signup" className="font-medium text-blue-500 hover:underline">
               Sign up
             </a>
           </p>
