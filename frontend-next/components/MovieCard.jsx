@@ -11,19 +11,17 @@ const MovieCard = ({ movie }) => {
   return (
     <div
       className="
-    movie-card w-56 p-3
-    bg-[#1e1e1e] 
-    rounded-2xl 
-    shadow-[0_10px_30px_rgba(0,0,0,0.6)] 
-    text-white cursor-pointer
-    hover:scale-105 
-    hover:shadow-[0_12px_40px_rgba(203,213,225,0.2)] 
-    transition-all duration-300 ease-in-out
-  "
+        movie-card w-56 p-3
+        bg-[#1e1e1e] 
+        rounded-2xl 
+        shadow-[0_10px_30px_rgba(0,0,0,0.6)] 
+        text-white cursor-pointer
+        hover:scale-105 
+        hover:shadow-[0_12px_40px_rgba(203,213,225,0.2)] 
+        transition-all duration-300 ease-in-out
+      "
       onClick={() => {
-        if (movie?.movie_id) {
-          router.push(`/movie/${movie.movie_id}`);
-        }
+        router.push(`/movie/${movie.movie_id}`);
       }}
     >
       <img
@@ -34,8 +32,11 @@ const MovieCard = ({ movie }) => {
       />
       <h3 className="text-lg font-bold truncate">{movie.title}</h3>
       <p className="text-xs text-gray-400">Genre: {movie.genre}</p>
-      <p className="text-xs text-gray-400">
-        Rating: {movie.rating || "Not Rated"}
+      <p className="text-xs text-gray-400 flex items-center gap-1">
+        <span>⭐ {movie.rating ? parseFloat(movie.rating).toFixed(1) : "N/A"}</span>
+        {movie.vote_count !== null && movie.vote_count !== undefined && (
+          <span className="text-gray-500">· {movie.vote_count} votes</span>
+        )}
       </p>
     </div>
   );
@@ -49,6 +50,7 @@ MovieCard.propTypes = {
     title: PropTypes.string.isRequired,
     genre: PropTypes.string,
     rating: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    vote_count: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   }).isRequired,
 };
 

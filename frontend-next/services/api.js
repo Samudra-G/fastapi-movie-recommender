@@ -27,7 +27,10 @@ export const fetchMovies = async (
       params.append("query", query.trim());
     } else {
       if (genre.trim() !== "") params.append("genre", genre.trim());
-      params.append("page", page);
+
+      // random page when not searching
+      const randomPage = Math.floor(Math.random() * 50) + 1;
+      params.append("page", randomPage);
       params.append("per_page", perPage);
     }
 
@@ -36,8 +39,13 @@ export const fetchMovies = async (
 
     const movies = response.data || [];
 
-    //Validating movie
-    const validated = movies.filter((movie) => movie.poster_url);
+    // Validate poster URLs
+    const validated = movies.filter(
+      (movie) =>
+        movie.poster_url &&
+        typeof movie.poster_url === "string" &&
+        movie.poster_url.trim().startsWith("http")
+    );
 
     return validated;
   } catch (error) {

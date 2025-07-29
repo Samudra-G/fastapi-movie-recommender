@@ -93,7 +93,9 @@ class RecommendationService:
                 "title": movie_lookup[rec.movie_id].title,
                 "genre": movie_lookup[rec.movie_id].genre,
                 "score": rec.score,
-                "poster_url": poster_map.get(rec.movie_id)
+                "poster_url": poster_map.get(rec.movie_id),
+                "rating": (movie_lookup[rec.movie_id].vote_average / 2) if movie_lookup[rec.movie_id].vote_average is not None else None,
+                "vote_count": movie_lookup[rec.movie_id].vote_count
             }
             for rec in recommendations if rec.movie_id in movie_lookup
         ]
@@ -125,14 +127,16 @@ class RecommendationService:
 
         if not rows:
             raise HTTPException(status_code=404, detail="No recommendations available")
-
+        
         recommendations_list = [
             MovieRecommendation(
                 movie_id=rec.movie_id,
                 title=movie.title,
                 genre=movie.genre,
                 score=rec.score,
-                poster_url=poster_url
+                poster_url=poster_url,
+                rating=(movie.vote_average / 2) if movie.vote_average is not None else None,
+                vote_count=movie.vote_count
             )
             for rec, movie, poster_url in rows
         ]

@@ -26,6 +26,8 @@ class MovieResponse(BaseModel):
     release_date: Optional[date] = None
     movie_id: int
     poster_url: Optional[str] = None
+    vote_count: Optional[int] = None
+    rating: Optional[float] = None 
     
     class Config:
         from_attributes = True
@@ -73,6 +75,8 @@ class MovieRecommendation(BaseModel):
     genre: str
     score: float
     poster_url: Optional[str] = None
+    vote_count: Optional[int] = None
+    rating: Optional[float] = None 
 
 class RecommendationResponse(BaseModel):
     user_id: int

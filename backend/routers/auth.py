@@ -10,7 +10,9 @@ from backend.auth import utils, oauth2
 from sqlalchemy.future import select
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+import logging
 
+logger = logging.getLogger(__name__)
 limiter = Limiter(key_func=get_remote_address)
 
 router = APIRouter(
@@ -34,13 +36,18 @@ async def login_user(request: Request, user_credentials: OAuth2PasswordRequestFo
             raise HTTPException(status_code=401, detail="Invalid credentials.")
         
         access_token = oauth2.create_access_token(data = {"user_id": user.user_id, "username": user.name, "role": user.role})
-
-        await RecommendationService.ensure_recommendations_exist(user.user_id, db) #type:ignore
-
-        return {"access_token": access_token, "token_type": "bearer"}
     
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Login failed: {str(e)}")
+    try:
+        await RecommendationService.ensure_recommendations_exist(user.user_id, db) #type:ignore
+    except Exception as e:
+        logger.warning(f"Failed to build recommendations for new user {user.user_id}: {e}")
+
+    return {"access_token": access_token, "token_type": "bearer"}
+    
 
 @router.post("/signup", response_model=schemas.UserResponse, status_code=201)    
 async def signup(request: Request, user: schemas.UserCreate, db: AsyncSession = Depends(database.get_db)):
