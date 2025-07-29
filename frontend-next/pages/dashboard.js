@@ -6,22 +6,44 @@ import { Typewriter } from "react-simple-typewriter";
 
 const Dashboard = () => {
   const [randomMovie, setRandomMovie] = useState(null);
+  const [isClient, setIsClient] = useState(false); // hydration guard
   const router = useRouter();
 
   useEffect(() => {
+    setIsClient(true); // mark hydration complete
+  }, []);
+
+  useEffect(() => {
+    if (!isClient) return;
+
     const loadRandomMovie = async () => {
       const movies = await fetchMovies("", "", 1, 100);
       if (movies?.length) {
         const random = movies[Math.floor(Math.random() * movies.length)];
-        setRandomMovie(random);
+
+        // Extra poster check
+        if (
+          random.poster_url &&
+          typeof random.poster_url === "string" &&
+          random.poster_url.trim().startsWith("http")
+        ) {
+          setRandomMovie(random);
+        } else {
+          console.warn("Skipped invalid poster_url:", random);
+        }
       }
     };
-    loadRandomMovie();
-  }, []);
 
-  if (!randomMovie || !randomMovie.poster_url) {
-    console.warn("Movie not ready or missing poster_url", randomMovie);
-    return null;
+    loadRandomMovie();
+  }, [isClient]);
+
+  // Still loading or movie not ready
+  if (!isClient || !randomMovie) {
+    return (
+      <div className="p-4 text-center text-gray-400 text-sm">
+        Loading dashboard...
+      </div>
+    );
   }
 
   return (
@@ -60,7 +82,7 @@ const Dashboard = () => {
           className="text-center md:text-left"
         >
           <h1
-            className="text-5xl font-bold mb-4 tracking-wide"
+            className="text-5xl font-bold tracking-wide mb-2"
             style={{
               fontFamily: "'Bebas Neue', sans-serif",
               textShadow: "0 0 10px rgba(255,255,255,0.2)",
@@ -68,6 +90,16 @@ const Dashboard = () => {
           >
             {randomMovie.title?.toUpperCase()}
           </h1>
+
+          {/* Rating and Vote Count */}
+          <div className="flex items-center justify-center md:justify-start gap-4 text-slate-300 text-base mb-4">
+            {randomMovie.rating !== null && (
+              <span>⭐ {randomMovie.rating.toFixed(1)}</span>
+            )}
+            {randomMovie.vote_count !== null && (
+              <span>👥 {randomMovie.vote_count} votes</span>
+            )}
+          </div>
 
           <p className="text-lg text-slate-300 mb-6">
             <Typewriter

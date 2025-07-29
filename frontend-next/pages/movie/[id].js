@@ -96,10 +96,20 @@ const MovieDetailPage = () => {
             <h1 className={`${titleSize} font-bold text-blue-400 mb-2`}>
               {movie.title}
             </h1>
-            <p className="text-gray-400 text-sm mb-2">
+            <p className="text-gray-400 text-sm mb-1">
               {movie.genre || "Unknown Genre"} •{" "}
               {new Date(movie.release_date).toDateString()}
             </p>
+
+            <div className="flex items-center gap-4 text-slate-300 text-sm mb-2">
+              {movie.rating !== null && (
+                <span>⭐ {movie.rating.toFixed(1)}</span>
+              )}
+              {movie.vote_count !== null && (
+                <span>👥 {movie.vote_count} votes</span>
+              )}
+            </div>
+
             <p className="text-gray-300 text-sm mb-4">
               {movie.overview || "No overview available."}
             </p>

@@ -54,6 +54,10 @@ class MovieService:
             logger.error("to_dict failed: ", e)
             raise 
         movie_dict["poster_url"] = poster_url 
+        vote_avg = movie.vote_average
+        normalized_rating = vote_avg / 2 if vote_avg is not None else None
+
+        movie_dict["rating"] = normalized_rating
 
         try:
             await redis_cache.set_cache(cache_key, movie_dict, expire=3600)
@@ -86,9 +90,12 @@ class MovieService:
             
             for movie, poster_url in movies:
                 movie_id = movie.movie_id
+                vote_avg = movie.vote_average
+                normalized_rating = vote_avg / 2 if vote_avg is not None else None
                 if movie.movie_id not in seen_movies:
                     movie_dict = to_dict(movie)
                     movie_dict["poster_url"] = poster_url
+                    movie_dict["rating"] = normalized_rating
                     seen_movies[movie_id] = movie_dict
                     movies_dict.append(movie_dict)
 
